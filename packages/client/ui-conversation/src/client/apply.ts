@@ -35,6 +35,7 @@ import { queueDockEntry } from './queue/QueueDock.tsx'
 import { ConversationRoot } from './skeleton/ConversationRoot.tsx'
 import { ConversationSession, ConversationSessionHeader } from './skeleton/ConversationSession.tsx'
 import { DetailsPanel } from './skeleton/DetailsPanel.tsx'
+import { DetailsPanelToggle } from './skeleton/DetailsPanelToggle.tsx'
 import { en, NS, zh, type ConversationKey } from './locales.ts'
 import { registerConversationNodes } from './conversation-nodes/register.ts'
 import { registerChatNodeRenderers } from './chat/register-node-renderers.ts'
@@ -268,6 +269,18 @@ export function apply(ctx: Context): void {
     }),
   }, ConversationSessionHeader)
 
+  // The right-aligned details-panel switch in the header: one icon that
+  // toggles the literature window column (layout orchestration, no state of
+  // its own — the panel itself shows the open/close affordance).
+  ctx.slots.inject('conversation.session.header.utilities', () => ctx.slots.register({
+    name: 'conversation.session.header.utilities',
+    id: 'details-toggle',
+    locale: NS,
+    inject: (): { toggleDetails: () => void } => ({
+      toggleDetails: () => { layout.toggleDetails() },
+    }),
+  }, DetailsPanelToggle))
+
   // The default composer body: its own single slot inside the composer
   // chain's fallback. Public machine surface arrives via the
   // provide channel above; the keyboard command face and the stop/retry
@@ -445,10 +458,8 @@ export function apply(ctx: Context): void {
     name: 'details',
     locale: NS,
     children: {
-      'conversation.details.tool': { kind: 'single', scope: 'session' },
       'conversation.details.literature': { kind: 'single', scope: 'session' },
     },
-    store: chatStore,
     inject: (): DetailsInjected => ({
       closeDetails: () => { layout.closeDetails() },
     }),

@@ -8,26 +8,36 @@
 
 import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol'
 import type {
+  FavoriteFolder,
   FavoritePaper,
   FavoritesAddResult,
+  FavoritesFolderCreateResult,
+  FavoritesFolderDeleteResult,
+  FavoritesFolderRenameResult,
   FavoritesListResult,
+  FavoritesMoveResult,
   FavoritesRemoveResult,
 } from '@deepseek-ai/dsh-literature-favorites/types'
 
-/** The three Remote calls this store needs. */
+/** The Remote calls this store needs. */
 export interface FavoritesRemote {
   list: () => Promise<RemoteResult<FavoritesListResult>>
   add: (request: Omit<FavoritePaper, 'addedAt'>) => Promise<RemoteResult<FavoritesAddResult>>
   delete: (request: { id: string }) => Promise<RemoteResult<FavoritesRemoveResult>>
+  folderCreate: (request: { name: string }) => Promise<RemoteResult<FavoritesFolderCreateResult>>
+  folderRename: (request: { id: string; name: string }) => Promise<RemoteResult<FavoritesFolderRenameResult>>
+  folderDelete: (request: { id: string }) => Promise<RemoteResult<FavoritesFolderDeleteResult>>
+  move: (request: { id: string; folderId: string | null }) => Promise<RemoteResult<FavoritesMoveResult>>
 }
 
 /** Immutable view handed to subscribers. */
 export interface FavoritesView {
   status: 'cold' | 'loading' | 'ready' | 'error'
+  folders: readonly FavoriteFolder[]
   papers: readonly FavoritePaper[]
 }
 
-const COLD: FavoritesView = { status: 'cold', papers: [] }
+const COLD: FavoritesView = { status: 'cold', folders: [], papers: [] }
 
 /** Unwrap one carrier envelope (transport failure = rejection). */
 function carrier<T>(result: RemoteResult<T>): T {
@@ -83,17 +93,21 @@ export class FavoritesStore {
     return this.refresh()
   }
 
-  /** Re-read the authoritative list. */
+  /** Re-read the authoritative collection. */
   refresh(): Promise<void> {
     if (this.loadPromise !== null) return this.loadPromise
-    this.publish({ status: 'loading', papers: this.view.papers })
+    this.publish({ status: 'loading', folders: this.view.folders, papers: this.view.papers })
     const pending = this.requireRemote().list()
       .then(carrier)
       .then((business) => {
-        if (!business.ok) throw new Error('favorites list failed')
-        this.publish({ status: 'ready', papers: business.value.papers })
+        // `list` has no business failure branch; only transport can throw.
+        this.publish({
+          status: 'ready',
+          folders: business.value.folders,
+          papers: business.value.papers,
+        })
       })
-      .catch(() => { this.publish({ status: 'error', papers: this.view.papers }) })
+      .catch(() => { this.publish({ status: 'error', folders: this.view.folders, papers: this.view.papers }) })
     this.loadPromise = pending
     return pending.finally(() => { this.loadPromise = null })
   }
@@ -112,41 +126,92 @@ export class FavoritesStore {
   }
 
   /**
-   * Bookmark or unbookmark one paper, then apply the committed reply.
-   * @param paper - the paper to toggle (id = DOI / PMID / arXiv id).
+   * Bookmark one paper under a folder, then apply the committed reply.
+   * @param paper - the paper to save (id = DOI / PMID / arXiv id).
+   * @param folderId - target folder id, or null for uncategorized.
    * @returns resolves when the Host has committed the mutation.
    */
-  toggle(paper: Omit<FavoritePaper, 'addedAt'>): Promise<void> {
-    const run = async (): Promise<void> => {
+  add(paper: Omit<FavoritePaper, 'addedAt' | 'folderId'>, folderId: string | null): Promise<void> {
+    return this.serialize(async () => {
       await this.ensure()
-      const remote = this.requireRemote()
-      if (this.isSaved(paper.id)) {
-        const result = carrier(await remote.delete({ id: paper.id }))
-        if (!result.ok) throw new Error(`favorites remove failed: ${result.error.code}`)
-        const papers = this.view.papers.filter(saved => saved.id !== paper.id)
-        this.publish({ status: 'ready', papers })
-        return
-      }
-      const result = carrier(await remote.add(paper))
+      const result = carrier(await this.requireRemote().add({ ...paper, folderId }))
       if (!result.ok) throw new Error(`favorites add failed: ${result.error.code}`)
-      const papers = [...this.view.papers, result.value]
-      this.publish({ status: 'ready', papers })
-    }
-    const next = this.operationTail.then(run, run)
-    this.operationTail = next.then(() => undefined, () => undefined)
-    return next
+      const view = this.view
+      this.publish({ status: 'ready', folders: view.folders, papers: [...view.papers, result.value] })
+    })
   }
 
-  /** Remove one bookmarked paper by id (panel delete button). */
+  /** Remove one bookmarked paper by id (star un-toggle / panel delete button). */
   remove(id: string): Promise<void> {
-    const run = async (): Promise<void> => {
+    return this.serialize(async () => {
       await this.ensure()
       const result = carrier(await this.requireRemote().delete({ id }))
       if (!result.ok) throw new Error(`favorites remove failed: ${result.error.code}`)
-      const papers = this.view.papers.filter(saved => saved.id !== id)
-      this.publish({ status: 'ready', papers })
-    }
-    const next = this.operationTail.then(run, run)
+      const view = this.view
+      this.publish({ status: 'ready', folders: view.folders, papers: view.papers.filter(saved => saved.id !== id) })
+    })
+  }
+
+  /** Create one category folder; resolves with the committed folder. */
+  createFolder(name: string): Promise<FavoriteFolder> {
+    return this.serialize(async () => {
+      await this.ensure()
+      const result = carrier(await this.requireRemote().folderCreate({ name }))
+      if (!result.ok) throw new Error(`favorites folder create failed: ${result.error.code}`)
+      const view = this.view
+      this.publish({ status: 'ready', folders: [...view.folders, result.value], papers: view.papers })
+      return result.value
+    })
+  }
+
+  /** Rename one folder by id. */
+  renameFolder(id: string, name: string): Promise<void> {
+    return this.serialize(async () => {
+      await this.ensure()
+      const result = carrier(await this.requireRemote().folderRename({ id, name }))
+      if (!result.ok) throw new Error(`favorites folder rename failed: ${result.error.code}`)
+      const view = this.view
+      this.publish({
+        status: 'ready',
+        folders: view.folders.map(folder => folder.id === id ? result.value : folder),
+        papers: view.papers,
+      })
+    })
+  }
+
+  /** Delete one folder by id; its papers move back to uncategorized. */
+  deleteFolder(id: string): Promise<void> {
+    return this.serialize(async () => {
+      await this.ensure()
+      const result = carrier(await this.requireRemote().folderDelete({ id }))
+      if (!result.ok) throw new Error(`favorites folder delete failed: ${result.error.code}`)
+      const view = this.view
+      this.publish({
+        status: 'ready',
+        folders: view.folders.filter(folder => folder.id !== id),
+        papers: view.papers.map(paper => paper.folderId === id ? { ...paper, folderId: null } : paper),
+      })
+    })
+  }
+
+  /** File one paper under a folder (null = uncategorized). */
+  move(id: string, folderId: string | null): Promise<void> {
+    return this.serialize(async () => {
+      await this.ensure()
+      const result = carrier(await this.requireRemote().move({ id, folderId }))
+      if (!result.ok) throw new Error(`favorites move failed: ${result.error.code}`)
+      const view = this.view
+      this.publish({
+        status: 'ready',
+        folders: view.folders,
+        papers: view.papers.map(paper => paper.id === id ? { ...paper, folderId: result.value.folderId } : paper),
+      })
+    })
+  }
+
+  /** Run one mutation behind the prior one (Remote mutations must not interleave). */
+  private serialize<T>(operation: () => Promise<T>): Promise<T> {
+    const next = this.operationTail.then(operation, operation)
     this.operationTail = next.then(() => undefined, () => undefined)
     return next
   }

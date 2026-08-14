@@ -131,10 +131,14 @@ async function main() {
   }
   await page.screenshot({ path: `${SHOTS}/04-panel.png` })
 
-  // Favorite the first paper in the panel.
+  // Favorite the first paper in the panel. The star opens the folder
+  // chooser; pick 未分类 to complete the save.
   console.log('8. favorite first paper in the right panel')
   if (await star.count() > 0) {
     await star.click({ force: true })
+    await page.getByRole('dialog').getByRole('button', { name: '未分类' }).first()
+      .click({ timeout: 5000 })
+      .catch(() => { console.log('   ! folder chooser did not open') })
     await page.waitForTimeout(2000)
     console.log('   starred')
   }

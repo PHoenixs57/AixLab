@@ -1,0 +1,23 @@
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.trigger:hover {
+  background: var(--dsw-alias-fill-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+/* The panel glyph points left by design; flipped it points at the right
+   details column the button toggles. */
+.icon {
+  transform: scaleX(-1);
+}

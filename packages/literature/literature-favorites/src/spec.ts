@@ -7,9 +7,16 @@
 
 import { z } from 'zod'
 import { defineDomain, domainTable } from '@deepseek-ai/dsh-storage-domain'
-import type { FavoritePaper } from './types.ts'
+import type { FavoriteFolder, FavoritePaper } from './types.ts'
 
 const nonNegativeSafeInteger = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER)
+
+/** Runtime schema for one category folder entry. */
+export const favoriteFolderSchema = z.object({
+  id: z.string().min(1).max(128),
+  name: z.string().min(1),
+  createdAt: nonNegativeSafeInteger,
+}) as unknown as z.ZodType<FavoriteFolder>
 
 /** Runtime schema for one bookmark entry. */
 export const favoritePaperSchema = z.object({
@@ -20,6 +27,9 @@ export const favoritePaperSchema = z.object({
   venue: z.string().max(512).nullable(),
   abstract: z.string().nullable(),
   url: z.string().max(2048).nullable(),
+  // Optional: rows persisted before the folder format lack this key; the
+  // service normalizes `folderId ?? null` on read and writes the full shape.
+  folderId: z.string().max(128).nullable().optional(),
   addedAt: nonNegativeSafeInteger,
 }) as unknown as z.ZodType<FavoritePaper>
 
@@ -28,6 +38,9 @@ export const favoritePaperSchema = z.object({
  * the persisted shape rejects them outright.
  */
 export const favoritesRowSchema = z.object({
+  // Optional for the same migration reason as `folderId`: pre-folder rows
+  // carry only `papers`.
+  folders: z.array(favoriteFolderSchema).optional(),
   papers: z.array(favoritePaperSchema),
 }).superRefine((row, ctx) => {
   const ids = new Set<string>()

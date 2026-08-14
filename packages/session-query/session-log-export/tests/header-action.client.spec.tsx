@@ -40,7 +40,7 @@ afterEach(cleanup)
 describe('Session export Header action', () => {
   it('renders the 111×32 text capsule and downloads through the shared controller', async () => {
     const b = bench()
-    const button = b.view.getByRole('button', { name: 'Session log' })
+    const button = b.view.getByRole('button', { name: 'Download session history' })
     expect(button.querySelector('svg')).not.toBeNull()
     fireEvent.click(button)
     await waitFor(() => { expect(b.request).toHaveBeenCalledWith(SID) })
@@ -62,7 +62,7 @@ describe('Session export Header action', () => {
     } as unknown as SessionLogDownloadDialogProps)} />)
 
     const download = controller.download(SID)
-    const button = b.view.getByRole('button', { name: 'Session log' })
+    const button = b.view.getByRole('button', { name: 'Download session history' })
     await waitFor(() => { expect(button.getAttribute('aria-busy')).toBe('true') })
     expect((button as HTMLButtonElement).disabled).toBe(true)
     release(new Response('zip'))

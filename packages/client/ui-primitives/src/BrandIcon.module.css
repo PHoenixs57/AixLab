@@ -1,0 +1,14 @@
+/* Brand mark theme swap: the raster logo cannot ride currentColor, so the
+   light/dark variants are two stacked images toggled by the app's dark-theme
+   marker (body[data-ds-dark-theme], written by the theme presenter). */
+.dark {
+  display: none;
+}
+
+body[data-ds-dark-theme] .light {
+  display: none;
+}
+
+body[data-ds-dark-theme] .dark {
+  display: block;
+}

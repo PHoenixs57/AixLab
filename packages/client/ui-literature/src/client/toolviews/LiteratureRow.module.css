@@ -204,3 +204,108 @@
   font-size: 11px;
   color: var(--dsw-alias-label-secondary);
 }
+
+/* Searching affordance: while the literature search tool runs, the row carries
+   a scan shimmer, the summary text shimmers like the turn status, and the
+   magnifier sweeps with a pulsing glow. Motion spec: LiteratureSearchLoupe
+   (remotion-studio) — sweep rotation/translation and the glow pulse are ported
+   from that composition's keyframes. */
+.searching {
+  position: relative;
+}
+
+.searching::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    color-mix(in srgb, var(--dsw-static-deepseek-500) 7%, transparent) 50%,
+    transparent 80%
+  );
+  background-size: 220% 100%;
+  animation: dsh-literature-scan-shimmer 1.9s linear infinite;
+}
+
+.searching .rowIcon {
+  color: var(--dsw-alias-brand-primary-new-colorprimary-new-color);
+}
+
+.searchingIcon {
+  animation:
+    dsh-literature-loupe-sweep 1.6s ease-in-out infinite,
+    dsh-literature-loupe-glow 1.6s ease-in-out infinite;
+}
+
+.searching .rowSummary {
+  background: linear-gradient(
+    90deg,
+    var(--dsw-static-deepseek-500) 0%,
+    var(--dsw-static-deepseek-500) 40%,
+    var(--dsw-static-deepseek-200) 50%,
+    var(--dsw-static-deepseek-500) 60%,
+    var(--dsw-static-deepseek-500) 100%
+  );
+  background-position: 100% 0;
+  background-size: 250% 100%;
+  background-clip: text;
+  color: transparent;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: dsh-literature-summary-shimmer 1.8s linear infinite;
+}
+
+@keyframes dsh-literature-scan-shimmer {
+  0% {
+    background-position: 120% 0;
+  }
+  100% {
+    background-position: -120% 0;
+  }
+}
+
+@keyframes dsh-literature-loupe-sweep {
+  0%,
+  100% {
+    transform: translateX(-2px) rotate(-12deg);
+  }
+  50% {
+    transform: translateX(2px) rotate(12deg);
+  }
+}
+
+@keyframes dsh-literature-loupe-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 1px color-mix(in srgb, var(--dsw-static-deepseek-500) 45%, transparent));
+  }
+  50% {
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--dsw-static-deepseek-500) 75%, transparent));
+  }
+}
+
+@keyframes dsh-literature-summary-shimmer {
+  to {
+    background-position: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .searching::after,
+  .searchingIcon,
+  .searching .rowSummary {
+    animation: none;
+  }
+
+  .searching::after {
+    display: none;
+  }
+
+  .searching .rowSummary {
+    background: none;
+    color: var(--dsw-alias-label-secondary);
+    -webkit-text-fill-color: var(--dsw-alias-label-secondary);
+  }
+}

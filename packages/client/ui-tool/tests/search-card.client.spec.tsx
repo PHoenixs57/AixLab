@@ -8,24 +8,16 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render } from '@testing-library/react'
-import { bindSnapshotSelector } from '@deepseek-ai/dsh-client-web-react'
-import {
-  createSnapshotStore, EMPTY_CONVERSATION_VIEWS,
-} from '@deepseek-ai/dsh-client-runtime/client'
 import type {
-  ConversationSnapshot, RunningToolCall, SessionId, SessionListState, ToolResultNode, WorkspaceListState,
+  RunningToolCall, SessionId, ToolResultNode,
 } from '@deepseek-ai/dsh-client-runtime/client'
 import type { ToolResultView } from '@deepseek-ai/dsh-api-remotes/client'
-import type { SelectionTarget } from '@deepseek-ai/dsh-client-ui-conversation/client'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
 import { zh as commonZh } from '@deepseek-ai/dsh-client-locale/src/locales/zh.ts'
 import { CHAT_SEARCH_MAX_LINES, searchCardModel } from '../src/client/tool/models/search-card-model.ts'
 import { zh } from '@deepseek-ai/dsh-client-ui-conversation/src/client/locales.ts'
-import { createChatStore } from '@deepseek-ai/dsh-client-ui-conversation/src/client/stores.ts'
 import { GenericToolCard, type GenericToolCardProps } from '../src/client/tool/toolviews/GenericToolCard.tsx'
-import { DetailsPanel } from '@deepseek-ai/dsh-client-ui-conversation/src/client/skeleton/DetailsPanel.tsx'
 import { SearchRow, searchToolview } from '../src/client/tool/toolviews/search-row.tsx'
-import { renderToolDetails, SessionProviderStub, toolChatSnapshot } from './tool-details-render.client.tsx'
 
 /** SearchRow now composes ToolRow, so its props include the locale `t` seat. */
 type SearchRowProps = Parameters<typeof SearchRow>[0]
@@ -373,91 +365,5 @@ describe('SearchRow keyed card', () => {
     expect(registered[0]!.component).toBe(SearchRow)
     expect(registered[1]!.component).toBe(SearchRow)
     expect(searchToolview.inject).toEqual(['slots'])
-  })
-})
-
-describe('DetailsPanel Output section (search)', () => {
-  function mount(snapshot: ConversationSnapshot, selection: SelectionTarget | null) {
-    localStorage.clear()
-    const chat = createChatStore().create()
-    if (selection !== null) chat.actions.select(selection)
-    const sessions = createSnapshotStore<SessionListState>({
-      ids: [], byId: {}, current: undefined, phase: 'ready',
-      subagentsByParent: {}, jobsBySession: {}, currentAddress: undefined,
-    })
-    const workspaces = createSnapshotStore<WorkspaceListState>({
-      items: [], archivedSessionIds: [], state: 'idle', phase: 'ready', error: null,
-      baselinesReady: true, recentWorkspaceId: undefined,
-    })
-    return render(
-      <DetailsPanel
-        SessionProvider={SessionProviderStub}
-        renderSlot={renderToolDetails(t)}
-        sessionId={SID}
-        useSession={bindSnapshotSelector({ getSnapshot: () => snapshot, subscribe: () => () => {} })}
-        useSessions={bindSnapshotSelector(sessions)}
-        useWorkspaces={bindSnapshotSelector(workspaces)}
-        useInput={(() => { throw new Error('unused') })}
-        inputActions={{
-          setDraft: () => {},
-          addImages: () => true,
-          removeImage: () => {},
-          pruneImages: () => {},
-          submit: () => {},
-        }}
-        useProjection={(() => undefined)}
-        useStore={bindSnapshotSelector(chat)}
-        actions={chat.actions}
-        closeDetails={vi.fn()}
-        t={t}
-      />,
-    )
-  }
-
-  function snapshot(over: Partial<ConversationSnapshot> = {}): ConversationSnapshot {
-    const nodes = over.nodes ?? []
-    const runningCalls = over.runningCalls ?? []
-    return {
-      sessionId: SID, views: EMPTY_CONVERSATION_VIEWS,
-      chat: over.chat ?? toolChatSnapshot(nodes, runningCalls),
-      nodes: [], turnTimings: new Map(), turnEnds: new Map(), partial: null, runningCalls: [],
-      pending: [], queue: [], running: false, composerPhase: 'active', removed: false,
-      openState: 'open', openError: null, hasMore: false, loadingOlder: false,
-      promptError: null, blank: false, subagent: null, lastAgentError: null, ...over,
-    }
-  }
-
-  const grepTarget: SelectionTarget = { turnSeq: 10, callId: 'c1', toolName: 'grep' }
-  const globTarget: SelectionTarget = { turnSeq: 11, callId: 'c2', toolName: 'glob' }
-
-  it('renders the grep matches card at full height, keeping the JSON Input section', () => {
-    const view = mount(snapshot({ nodes: [settledGrep()] }), grepTarget)
-    expect(view.getByText(/"pattern"/)).toBeTruthy()
-    expect(searchRows(view.container)).toContain('12: const foo = 1')
-    expect(searchKindOf(view.container)).toBe('matches')
-  })
-
-  it('renders the glob path card', () => {
-    const view = mount(snapshot({ nodes: [settledGlob()] }), globTarget)
-    expect(view.getByText('src/a.ts')).toBeTruthy()
-    expect(searchKindOf(view.container)).toBe('paths')
-  })
-
-  it('renders the recovery footer below the card for a capped search', () => {
-    const recovery = 'src/a.ts\nsrc/b.ts\n\n(Showing 2 of 23 paths. Full sorted result stored at: spill://glob-7.)'
-    const view = mount(snapshot({
-      nodes: [settledGlob({ content: [{ type: 'text', text: recovery }], resultView: resultPaths({ truncated: true, total: 23 }) })],
-    }), globTarget)
-    expect(searchKindOf(view.container)).toBe('paths')
-    expect(view.getByText(/Full sorted result stored at: spill:\/\/glob-7/)).toBeTruthy()
-  })
-
-  it('a non-search result keeps the flattened pre form', () => {
-    const view = mount(snapshot({
-      nodes: [settledGrep({ callView: null, resultView: null })],
-    }), grepTarget)
-    expect(searchKindOf(view.container)).toBeNull()
-    const output = view.getByText('输出').closest('section')
-    expect(output?.querySelector('pre')?.textContent).toContain('const foo = 1')
   })
 })

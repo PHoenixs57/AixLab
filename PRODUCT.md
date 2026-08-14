@@ -9,7 +9,7 @@ AixLab 以 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) �
 - **文献 agent 对话**：新建会话即默认进入「AixLab 文献助手」模式（也可从预设菜单切换），用自然语言（中英文均可）描述研究主题。
 - **多源检索**：通过 [literature-search-mcp](mcp/literature-search-mcp)（stdio MCP）并行检索 PubMed、Europe PMC、bioRxiv/medRxiv、Crossref、OpenAlex、Semantic Scholar、arXiv，自动去重融合。工具：`mcp__literature__literature_search` / `_sources` / `_get_fulltext`。
 - **文献卡片**：对话结束后，网页**右侧**自动展开「本次对话文献」窗口，把本次对话搜集到的所有文献（多轮检索自动去重合并）列成卡片——标题、作者、年份、期刊、DOI/PMID/arXiv 链接、开放获取标记、可折叠摘要。聊天里的检索工具行只保留摘要（"N 篇文献 + 查看卡片"按钮），不再内嵌卡片。
-- **收藏**：右侧卡片上的星标一键收藏/取消收藏；侧栏「文献收藏」库默认**折叠**只显示计数（点击展开列表，长列表带滚动），逐条可删除、可打开原文；收藏持久化在服务端（`$DSH_HOME/storages/literature_favorites.json`），跨会话、跨浏览器保留，agent 也能读写（`literature_favorites_add/remove/list` 工具）。右侧「本次对话文献」窗口同样支持折叠。
+- **收藏（文件夹分类）**：右侧卡片上的星标一键收藏；点星标会弹出「收藏到分类」窗口，可把文献存进已有的分类文件夹或现场新建一个（不选则进「未分类」）。侧栏「文献收藏」是一个**扁平文件管理器**：按「全部 / 未分类 / 各分类文件夹」浏览，可新建、重命名、删除分类（删除时其中文献自动移回未分类，不丢文献），每篇文献可经「移动到分类」换文件夹；收藏持久化在服务端（`$DSH_HOME/storages/literature_favorites.json`），跨会话、跨浏览器保留，agent 也能读写（`literature_favorites_add/remove/list/folder_create/folder_rename/folder_delete/move` 工具，`add`/`move` 可带 `folder` 分类名，不存在时自动创建）。右侧「本次对话文献」窗口同样支持折叠。
 - 其他 DeepSeek Harness 能力（工作区、代码执行、子代理、goal 自动续跑等）全部保留。
 
 ## 快速开始
@@ -65,7 +65,7 @@ aixlab/
 3. 客户端 `ui-literature` 分两处消费这些结果：
    - **右侧文献窗口**（`conversation.details.literature` 槽位）：从当前会话快照聚合所有 `literature_search` 结果（去重），渲染卡片列表；对话轮次结束后自动展开右侧列。
    - **聊天工具行**（keyed toolview）：检索行只显示摘要 + 「查看卡片」按钮；全文/来源行保留行内折叠视图。
-4. 收藏星标 → 客户端经 Typert Remote（`literatureFavorites` 命名空间）调用宿主 `literature-favorites` 服务 → 写入 storage-domain 的 `literature_favorites` 域（`$DSH_HOME/storages/literature_favorites.json`）→ 侧栏收藏面板即时同步。
+4. 收藏星标/文件夹操作 → 客户端经 Typert Remote（`literatureFavorites` 命名空间，`add` / `delete` / `move` / `folderCreate` / `folderRename` / `folderDelete` / `list`）调用宿主 `literature-favorites` 服务 → 写入 storage-domain 的 `literature_favorites` 域（`$DSH_HOME/storages/literature_favorites.json`，旧版无分类数据读入时自动归一化）→ 侧栏收藏面板即时同步。
 
 **为什么 MCP 与收藏服务放在宿主层而不是预设里**：预设挂载的审计会拒绝把 Service 发布进根域的预设行，且预设子树里的工具注册不会进入 agent 的请求目录；文献工具是本产品的核心能力，属于宿主组成。
 

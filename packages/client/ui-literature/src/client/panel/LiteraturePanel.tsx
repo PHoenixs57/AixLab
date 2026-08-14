@@ -4,7 +4,7 @@
  * It auto-opens the details column once a turn settles with new papers.
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Context } from '@deepseek-ai/cordis'
 import { IconChevronDownOutline14, IconChevronUpOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
 import { shallowEqual } from '@deepseek-ai/dsh-client-runtime/client'
@@ -42,6 +42,38 @@ export function LiteraturePanel({ useSession, openDetails, t }: LiteraturePanelP
   const snapshot = useSession(s => s, shallowEqual)
   const papers = useMemo(() => collectPapers(snapshot), [snapshot])
   const [open, setOpen] = useState(true)
+  // The paper list starts at the default 60vh cap; the bottom drag handle
+  // lets the user pull the window taller (component-local view state).
+  const [listHeight, setListHeight] = useState<number | null>(null)
+  const listRef = useRef<HTMLDivElement | null>(null)
+  const dragHandlers = useRef<{ move: (e: PointerEvent) => void; up: () => void } | null>(null)
+
+  // Unmount mid-drag: the window listeners must not outlive the panel.
+  useEffect(() => () => {
+    if (dragHandlers.current !== null) {
+      window.removeEventListener('pointermove', dragHandlers.current.move)
+      window.removeEventListener('pointerup', dragHandlers.current.up)
+      dragHandlers.current = null
+    }
+  }, [])
+
+  const startResize = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    const startY = event.clientY
+    const startHeight = listRef.current?.offsetHeight ?? 140
+    const move = (ev: PointerEvent): void => {
+      const next = Math.min(Math.max(startHeight + ev.clientY - startY, 140), window.innerHeight * 0.85)
+      setListHeight(next)
+    }
+    const up = (): void => {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+      dragHandlers.current = null
+    }
+    dragHandlers.current = { move, up }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+  }, [])
 
   useAutoOpen(papers.length, snapshot.running, openDetails)
 
@@ -60,15 +92,21 @@ export function LiteraturePanel({ useSession, openDetails, t }: LiteraturePanelP
           {open ? <IconChevronUpOutline14 /> : <IconChevronDownOutline14 />}
         </span>
       </button>
-      {open && papers.length === 0
-        ? <p className={css.empty}>{t('panelEmpty')}</p>
-        : open && (
-          <div className={css.list}>
+      {open && papers.length === 0 && <p className={css.empty}>{t('panelEmpty')}</p>}
+      {open && papers.length > 0 && (
+        <>
+          <div
+            ref={listRef}
+            className={css.list}
+            style={listHeight === null ? undefined : { maxHeight: listHeight }}
+          >
             {papers.map(paper => (
               <PaperCard key={paper.id ?? `${paper.title}-${paper.rank}`} paper={paper} t={t} />
             ))}
           </div>
-        )}
+          <div className={css.resizeHandle} onPointerDown={startResize} aria-hidden="true" />
+        </>
+      )}
     </section>
   )
 }

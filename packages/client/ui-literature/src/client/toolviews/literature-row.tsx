@@ -8,6 +8,7 @@
  */
 
 import { useState } from 'react'
+import clsx from 'clsx'
 import type { Context } from '@deepseek-ai/cordis'
 import { IconChevronDownOutline14, IconChevronUpOutline14, IconGlobeOutline14, IconLinkOutline14, IconRightUpOutline14, IconSearchOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
@@ -48,11 +49,11 @@ function FulltextBody({ model, t }: { model: NonNullable<ReturnType<typeof liter
         <div className={css.sections}>
           {model.sections.length > 0
             ? model.sections.map((section, index) => (
-                <section key={`${section.heading}-${index}`} className={css.section}>
-                  {section.heading !== '' && <h5 className={css.sectionHeading}>{section.heading}</h5>}
-                  <p className={css.sectionText}>{section.text}</p>
-                </section>
-              ))
+              <section key={`${section.heading}-${index}`} className={css.section}>
+                {section.heading !== '' && <h5 className={css.sectionHeading}>{section.heading}</h5>}
+                <p className={css.sectionText}>{section.text}</p>
+              </section>
+            ))
             : <p className={css.sectionText}>{model.fullText}</p>}
         </div>
       )}
@@ -102,6 +103,9 @@ export function LiteratureRow({ toolName, block, t, openDetails }: LiteratureRow
   const model = literatureModel(toolName, block)
   const running = !('kind' in block)
   const isSearch = toolName === 'mcp__literature__literature_search'
+  // Searching affordance: the sweep/glow animation (LiteratureSearchLoupe) and
+  // the row scan shimmer run only while the search tool itself is in flight.
+  const searching = isSearch && running
   const rawText = 'kind' in block
     ? block.content.filter(item => item.type === 'text').map(item => (item as { text: string }).text).join('\n')
     : ''
@@ -120,7 +124,7 @@ export function LiteratureRow({ toolName, block, t, openDetails }: LiteratureRow
   const hasBody = !isSearch && (model !== null || !running)
 
   return (
-    <div className={css.row}>
+    <div className={clsx(css.row, searching && css.searching)}>
       <div className={css.rowHeadLine}>
         <button
           type="button"
@@ -129,7 +133,7 @@ export function LiteratureRow({ toolName, block, t, openDetails }: LiteratureRow
           aria-expanded={open}
           disabled={!hasBody}
         >
-          <span className={css.rowIcon}><IconSearchOutline16 size={14} /></span>
+          <span className={css.rowIcon}><IconSearchOutline16 size={14} className={searching ? css.searchingIcon : undefined} /></span>
           <span className={css.rowTitle}>{title}</span>
           <span className={css.rowSummary}>{summary}</span>
           {hasBody && (open ? <IconChevronUpOutline14 /> : <IconChevronDownOutline14 />)}

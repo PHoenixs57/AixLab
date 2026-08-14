@@ -20,7 +20,7 @@
 - button "Settings":
   - img
   - text: Settings
-- text: Into the Unknown Preview
+- text: Start the Research Journey
 - button "Choose workspace":
   - img
   - text: workspace

@@ -62,3 +62,30 @@
   max-height: 60vh;
   overflow-y: auto;
 }
+
+/* Bottom drag handle: pull the paper window taller (the details column body
+   scrolls, so the list may exceed the viewport). */
+.resizeHandle {
+  flex: none;
+  height: 10px;
+  margin: 0 -4px -4px;
+  cursor: ns-resize;
+  touch-action: none;
+  position: relative;
+}
+
+.resizeHandle::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 36px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--dsw-alias-border-l3);
+}
+
+.resizeHandle:hover::after {
+  background: var(--dsw-alias-brand-primary-new-colorprimary-new-color);
+}

@@ -11,6 +11,7 @@ import clsx from 'clsx'
 import { favoritesStore } from '../favorites/store.ts'
 import { toFavoritePayload } from '../paper-model.ts'
 import type { PaperItem } from '../paper-model.ts'
+import { FolderPicker } from './FolderPicker.tsx'
 import { StarIcon } from './icons.tsx'
 import css from './PaperCard.module.css'
 
@@ -35,16 +36,32 @@ export function PaperCard({ paper, t }: { paper: PaperItem; t: PropsLocale<'lite
   const [abstractOpen, setAbstractOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [pickerOpen, setPickerOpen] = useState(false)
   const saved = view.status === 'ready' && view.papers.some(savedPaper => savedPaper.id === paper.id)
 
-  const toggleFavorite = useCallback(() => {
-    if (busy) return
+  // Star is a two-way door: unstar removes directly, star opens the folder
+  // chooser (the user picks the category the paper is filed under).
+  const onStar = useCallback(() => {
+    if (busy || paper.id === null) return
+    if (saved) {
+      setBusy(true)
+      setError(null)
+      favoritesStore.remove(paper.id)
+        .catch((reason: unknown) => { setError(String(reason)) })
+        .finally(() => { setBusy(false) })
+      return
+    }
+    setPickerOpen(true)
+  }, [busy, saved, paper.id])
+
+  const onPickFolder = useCallback((folderId: string | null) => {
+    setPickerOpen(false)
     setBusy(true)
     setError(null)
-    favoritesStore.toggle(toFavoritePayload(paper))
+    favoritesStore.add(toFavoritePayload(paper), folderId)
       .catch((reason: unknown) => { setError(String(reason)) })
       .finally(() => { setBusy(false) })
-  }, [busy, paper])
+  }, [paper])
 
   const toggleAbstract = useCallback(() => { setAbstractOpen(open => !open) }, [])
 
@@ -58,7 +75,7 @@ export function PaperCard({ paper, t }: { paper: PaperItem; t: PropsLocale<'lite
           disabled={busy}
           aria-label={saved ? t('removeFavorite') : t('addFavorite')}
           title={saved ? t('removeFavorite') : t('addFavorite')}
-          onClick={toggleFavorite}
+          onClick={onStar}
         >
           <StarIcon filled={saved} size={14} />
         </button>
@@ -105,6 +122,16 @@ export function PaperCard({ paper, t }: { paper: PaperItem; t: PropsLocale<'lite
         </div>
       )}
       {error !== null && <p className={css.cardError}>{error}</p>}
+      <FolderPicker
+        open={pickerOpen}
+        title={t('chooseFolder')}
+        uncategorizedLabel={t('uncategorized')}
+        newFolderPlaceholder={t('newFolder')}
+        createLabel={t('createFolder')}
+        folderNameError={t('folderNameError')}
+        onPick={onPickFolder}
+        onClose={() => { setPickerOpen(false) }}
+      />
     </article>
   )
 }

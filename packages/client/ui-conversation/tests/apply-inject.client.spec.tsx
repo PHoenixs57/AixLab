@@ -336,17 +336,15 @@ describe('conversation slot inject API', () => {
 })
 
 describe('details inject API', () => {
-  it('details injects the one layout callback; selection rides the shared store instead', async () => {
+  it('details injects the one layout callback; the literature window is the only body', async () => {
     const b = await bench()
     const entry = b.entryOf('details')
     const injected = (entry.inject as unknown as () => DetailsInjected)()
     expect(Object.keys(injected)).toEqual(['closeDetails'])
     injected.closeDetails()
     expect(b.layoutFake.closeDetails).toHaveBeenCalledTimes(1)
-    // The shared handle: details resolves the SAME instance conversation writes.
-    const conv = b.runtime.storeOf('conversation.session', ROOT)
-    const details = b.runtime.storeOf('details', ROOT)
-    expect(details).toBe(conv)
+    // The details entry declares no store: the panel no longer reads the
+    // shared selection (the tool-details body was removed).
     await b.runtime.dispose()
   })
 })

@@ -7,7 +7,7 @@ import type {
 } from '@deepseek-ai/dsh-client-ui-slots'
 import type {
   CommandNode, CompactionSummaryNode, ConversationSnapshot, ConversationTurnDataMap,
-  ObservableSnapshot, PendingInteraction, PendingWait, SessionId, ToolCallBlock,
+  ObservableSnapshot, PendingInteraction, PendingWait, SessionId,
   TurnLocation, WorkspaceId,
 } from '@deepseek-ai/dsh-client-runtime/client'
 import type { MarkdownFileMentions } from '@deepseek-ai/dsh-client-ui-primitives'
@@ -112,23 +112,10 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
       owner: AssistantActionOwnerProps
     }
     /**
-     * The body of the details panel for the tool call the user selected —
-     * one occupant, so taking it means rendering every tool's output, not just
-     * the ones you know. The owner passes a frozen `block` whose two lifecycle
-     * forms must both be handled: branch on `'kind' in block` (a settled
-     * `ToolResultNode` has it, a still-running call does not), and treat
-     * `cwd` as display-only, for shortening workspace-rooted paths.
-     * A per-tool renderer belongs in the keyed `tool.call.toolview` seat
-     * instead; this one is the whole panel.
-     */
-    'conversation.details.tool': { kind: 'single'; scope: 'session'; owner: DetailsToolOwnerProps }
-    /**
-     * The literature section of the details panel: the papers this session's
+     * The literature window of the details panel: the papers this session's
      * literature searches collected, rendered as cards by the literature UI
-     * plugin. Rendered above the tool-details body so the right column reads
-     * as a persistent "papers collected this conversation" window; the
-     * registrant receives no owner props (session facts arrive through the
-     * framework hooks).
+     * plugin. The registrant receives no owner props (session facts arrive
+     * through the framework hooks).
      */
     'conversation.details.literature': { kind: 'single'; scope: 'session'; owner: Record<string, never> }
     /**
@@ -378,14 +365,6 @@ export interface ChatNodeOwnerProps {
 /** Full props of one registered keyed Chat business renderer. */
 export type ChatNodeViewProps<Kind extends ChatNodeKind = ChatNodeKind> =
   PropsRuntime<'conversation.chat.node', Kind> & PropsLocale<'conversation'>
-
-/** Owner currency of the details panel's Tool output renderer. */
-export interface DetailsToolOwnerProps {
-  /** Frozen selected call slice. */
-  block: ToolCallBlock
-  /** Session workspace root for card cwd and relative-path display. */
-  cwd?: string | undefined
-}
 
 /**
  * Owner share of the per-command row slot: the frozen {@link CommandNode}
@@ -722,17 +701,17 @@ export type ChatViewSlotProps =
   & PropsStore<ChatStore> & ChatViewInjected & PropsLocale<'conversation'>
 
 /**
- * Injected share of the details slot: the panel is otherwise a pure reader of
- * the shared chat store, but its close button is a layout orchestration call.
+ * Injected share of the details slot: the panel's only outside call is its
+ * close button, a layout orchestration action.
  */
 export interface DetailsInjected {
   /** Close the details panel (layout geometry stays with ctx.layout). */
   closeDetails: () => void
 }
 
-/** Full details-slot props: selection store, Tool output seat, literature seat, injected close callback, and locale. */
-export type DetailsSlotProps = PropsRuntime<'details'> & PropsRenderSlots<'conversation.details.tool' | 'conversation.details.literature'>
-  & PropsStore<ChatStore> & DetailsInjected & PropsLocale<'conversation'>
+/** Full details-slot props: the literature seat, injected close callback, and locale. */
+export type DetailsSlotProps = PropsRuntime<'details'> & PropsRenderSlots<'conversation.details.literature'>
+  & DetailsInjected & PropsLocale<'conversation'>
 
 /** Owner share common to the hero / New-Session Workspace pickers. */
 export interface EmptyWorkspaceOwnerProps {

@@ -1,7 +1,9 @@
 /**
  * Service-level tests for the durable favorites sidecar: add/list/remove
  * round-trips, duplicate and not-found business failures, newest-first
- * ordering, and durability across a service restart over the same JSON root.
+ * ordering, folder create/rename/delete/move semantics, migration of the
+ * pre-folder persisted format, and durability across a service restart over
+ * the same JSON root.
  */
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -55,10 +57,10 @@ const PAPER = {
 }
 
 describe('literature-favorites service', () => {
-  it('lists empty before any bookmark', async () => {
+  it('lists an empty collection before any bookmark', async () => {
     const harness = await setupHarness()
     const result = await harness.ctx.literatureFavorites.list()
-    expect(result).toEqual({ ok: true, value: { papers: [] } })
+    expect(result).toEqual({ ok: true, value: { folders: [], papers: [] } })
   })
 
   it('adds, lists newest-first, removes, and rejects unknown ids', async () => {
@@ -156,13 +158,161 @@ describe('literature-favorites service', () => {
     await second.plugin(ToolRuntime)
     await second.plugin(LiteratureFavoritesService)
     const listed = await second.literatureFavorites.list()
-    expect(listed).toEqual({ ok: true, value: { papers: [expect.objectContaining({ id: PAPER.id })] } })
+    expect(listed).toEqual({
+      ok: true,
+      value: { folders: [], papers: [expect.objectContaining({ id: PAPER.id })] },
+    })
   })
 
-  it('registers the three agent tools', async () => {
+  it('registers the agent tools', async () => {
     const harness = await setupHarness()
     expect(harness.ctx.tools.get('literature_favorites_add')).toBeDefined()
     expect(harness.ctx.tools.get('literature_favorites_remove')).toBeDefined()
     expect(harness.ctx.tools.get('literature_favorites_list')).toBeDefined()
+    expect(harness.ctx.tools.get('literature_favorites_folder_create')).toBeDefined()
+    expect(harness.ctx.tools.get('literature_favorites_folder_rename')).toBeDefined()
+    expect(harness.ctx.tools.get('literature_favorites_folder_delete')).toBeDefined()
+    expect(harness.ctx.tools.get('literature_favorites_move')).toBeDefined()
+  })
+
+  it('creates folders, rejects duplicate and invalid names', async () => {
+    const harness = await setupHarness()
+    const created = await harness.ctx.literatureFavorites.folderCreate({ name: ' 综述 ' })
+    expect(created.ok).toBe(true)
+    if (!created.ok) throw new Error('create failed')
+    expect(created.value.name).toBe('综述')
+    expect(created.value.id).toBe('folder') // non-Latin name falls back to the base id
+    expect(Object.isFrozen(created.value)).toBe(true)
+
+    const duplicate = await harness.ctx.literatureFavorites.folderCreate({ name: '综述' })
+    expect(duplicate).toEqual({ ok: false, error: { code: 'duplicate-folder', name: '综述' } })
+
+    const invalid = await harness.ctx.literatureFavorites.folderCreate({ name: '   ' })
+    expect(invalid).toEqual({ ok: false, error: { code: 'invalid-name' } })
+
+    const listed = await harness.ctx.literatureFavorites.list()
+    expect(listed.ok).toBe(true)
+    if (!listed.ok) throw new Error('list failed')
+    expect(listed.value.folders.map(folder => folder.name)).toEqual(['综述'])
+  })
+
+  it('renames folders and rejects clashing names', async () => {
+    const harness = await setupHarness()
+    const first = await harness.ctx.literatureFavorites.folderCreate({ name: 'Reviews' })
+    const second = await harness.ctx.literatureFavorites.folderCreate({ name: 'Methods' })
+    if (!first.ok || !second.ok) throw new Error('create failed')
+
+    // Case-insensitive clash: 'reviews' collides with 'Reviews'.
+    const clash = await harness.ctx.literatureFavorites.folderRename({ id: second.value.id, name: 'REVIEWS' })
+    expect(clash).toEqual({ ok: false, error: { code: 'duplicate-folder', name: 'REVIEWS' } })
+
+    const renamed = await harness.ctx.literatureFavorites.folderRename({ id: second.value.id, name: ' Method ' })
+    expect(renamed.ok).toBe(true)
+    if (!renamed.ok) throw new Error('rename failed')
+    expect(renamed.value.name).toBe('Method')
+    expect(renamed.value.id).toBe(second.value.id)
+
+    const missing = await harness.ctx.literatureFavorites.folderRename({ id: 'absent', name: 'X' })
+    expect(missing).toEqual({ ok: false, error: { code: 'folder-not-found', id: 'absent' } })
+  })
+
+  it('files papers under folders and moves them between folders', async () => {
+    const harness = await setupHarness()
+    const folder = await harness.ctx.literatureFavorites.folderCreate({ name: '综述' })
+    if (!folder.ok) throw new Error('create failed')
+
+    const added = await harness.ctx.literatureFavorites.add({ ...PAPER, folderId: folder.value.id })
+    expect(added.ok).toBe(true)
+    if (!added.ok) throw new Error('add failed')
+    expect(added.value.folderId).toBe(folder.value.id)
+
+    // Unknown folder on add is a business failure.
+    const badFolder = await harness.ctx.literatureFavorites.add({ ...PAPER, id: '10.1000/example.2', title: 'T', folderId: 'absent' })
+    expect(badFolder).toEqual({ ok: false, error: { code: 'folder-not-found', id: 'absent' } })
+
+    // Move to uncategorized, then to another folder.
+    const moved = await harness.ctx.literatureFavorites.move({ id: PAPER.id, folderId: null })
+    expect(moved).toEqual({ ok: true, value: { moved: PAPER.id, folderId: null } })
+    const other = await harness.ctx.literatureFavorites.folderCreate({ name: 'Methods' })
+    if (!other.ok) throw new Error('create failed')
+    const refiled = await harness.ctx.literatureFavorites.move({ id: PAPER.id, folderId: other.value.id })
+    expect(refiled.ok).toBe(true)
+    if (!refiled.ok) throw new Error('move failed')
+    expect(refiled.value.folderId).toBe(other.value.id)
+
+    const missingPaper = await harness.ctx.literatureFavorites.move({ id: 'absent', folderId: null })
+    expect(missingPaper).toEqual({ ok: false, error: { code: 'not-found', id: 'absent' } })
+    const missingFolder = await harness.ctx.literatureFavorites.move({ id: PAPER.id, folderId: 'absent' })
+    expect(missingFolder).toEqual({ ok: false, error: { code: 'folder-not-found', id: 'absent' } })
+
+    const listed = await harness.ctx.literatureFavorites.list()
+    expect(listed.ok).toBe(true)
+    if (!listed.ok) throw new Error('list failed')
+    expect(listed.value.papers[0]!.folderId).toBe(other.value.id)
+  })
+
+  it('deleting a folder moves its papers back to uncategorized', async () => {
+    const harness = await setupHarness()
+    const folder = await harness.ctx.literatureFavorites.folderCreate({ name: '综述' })
+    if (!folder.ok) throw new Error('create failed')
+    await harness.ctx.literatureFavorites.add({ ...PAPER, folderId: folder.value.id })
+
+    const removed = await harness.ctx.literatureFavorites.folderDelete({ id: folder.value.id })
+    expect(removed).toEqual({ ok: true, value: { removed: folder.value.id } })
+
+    const missing = await harness.ctx.literatureFavorites.folderDelete({ id: folder.value.id })
+    expect(missing).toEqual({ ok: false, error: { code: 'folder-not-found', id: folder.value.id } })
+
+    const listed = await harness.ctx.literatureFavorites.list()
+    expect(listed.ok).toBe(true)
+    if (!listed.ok) throw new Error('list failed')
+    expect(listed.value.folders).toEqual([])
+    expect(listed.value.papers).toHaveLength(1)
+    expect(listed.value.papers[0]!.folderId).toBeNull()
+  })
+
+  it('normalizes a pre-folder persisted row on read', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'dsh-literature-favorites-migrate-'))
+    roots.push(root)
+    // Seed the on-disk medium in the old format: no `folders` key, no
+    // per-paper `folderId`.
+    const { writeFile } = await import('node:fs/promises')
+    await writeFile(join(root, 'literature_favorites.json'), JSON.stringify({
+      unit: { name: 'literature_favorites', version: 0 },
+      global: null,
+      tables: {
+        papers: {
+          global: {
+            papers: [{
+              id: PAPER.id,
+              title: PAPER.title,
+              authors: PAPER.authors,
+              year: PAPER.year,
+              venue: PAPER.venue,
+              abstract: PAPER.abstract,
+              url: PAPER.url,
+              addedAt: 123,
+            }],
+          },
+        },
+      },
+    }, null, 2) + '\n')
+
+    const ctx = new Context()
+    contexts.push(ctx)
+    await ctx.plugin(Storage)
+    await ctx.plugin(StorageJson, { root })
+    await ctx.plugin(StorageDomain, { backend: 'json' })
+    await ctx.plugin(SystemPrompt)
+    await ctx.plugin(ToolRuntime)
+    await ctx.plugin(LiteratureFavoritesService)
+
+    const listed = await ctx.literatureFavorites.list()
+    expect(listed.ok).toBe(true)
+    if (!listed.ok) throw new Error('list failed')
+    expect(listed.value.folders).toEqual([])
+    expect(listed.value.papers).toHaveLength(1)
+    expect(listed.value.papers[0]!.folderId).toBeNull()
+    expect(listed.value.papers[0]!.title).toBe(PAPER.title)
   })
 })

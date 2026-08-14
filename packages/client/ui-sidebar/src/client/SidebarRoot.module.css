@@ -223,10 +223,13 @@
 
 /* Region seat: always mounted so the foot never moves. Its trailing margin
    cancels the wide shell inset so the nested scrollbar can sit at the sidebar
-   edge; the browser restores that inset inside its own rows. */
+   edge; the browser restores that inset inside its own rows. Capped at the
+   top half (minus the chrome above it) so the favorites title below lands at
+   the sidebar's vertical middle. */
 .regionArea {
   flex: 1;
   min-height: 0;
+  max-height: calc(50% - 122px);
   display: flex;
   flex-direction: column;
   margin-left: -4px;
@@ -239,6 +242,7 @@
   margin-left: 0;
   margin-right: 0;
   padding-left: 0;
+  max-height: none;
 }
 
 /* Footer seats: additive actions stack above Settings. Each occupant owns its
@@ -249,14 +253,21 @@
   flex-direction: column;
 }
 
-/* Favorites seat: sits between the browsing region and the foot; its
-   occupant owns the row geometry. */
+/* Favorites seat: fills the lower half between the browsing region and the
+   foot, so its title stays pinned at the sidebar's vertical middle and the
+   occupant's library scrolls inside the space below it. */
 .favoritesArea {
-  flex: none;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   border-top: 1px solid var(--dsw-alias-border-l2);
   padding-top: 6px;
+}
+
+/* Rail: the star button stays at the bottom stack; the region keeps the rest. */
+.collapsed .favoritesArea {
+  flex: none;
 }
 
 .settingsArea,

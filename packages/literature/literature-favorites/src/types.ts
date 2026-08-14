@@ -1,9 +1,24 @@
 /**
  * Wire types for the durable literature-favorites sidecar: one bookmark
- * entry per saved paper, plus the Remote request/result envelopes the
- * client favorites panel consumes.
+ * entry per saved paper plus one flat category folder per classification,
+ * and the Remote request/result envelopes the client favorites panel
+ * consumes.
  * @module @deepseek-ai/dsh-literature-favorites/types
  */
+
+/**
+ * One user-created category folder. Folders are single-level (a flat file
+ * manager, not a tree): every paper sits in at most one folder, or in
+ * "uncategorized" (`folderId: null`).
+ */
+export interface FavoriteFolder {
+  /** Stable folder id (slug-derived; never shown to users). */
+  id: string
+  /** Display name; unique across folders (case-insensitive). */
+  name: string
+  /** Unix epoch ms when the folder was created. */
+  createdAt: number
+}
 
 /**
  * One saved paper. `id` is the deduplication key: the DOI when present
@@ -23,6 +38,8 @@ export interface FavoritePaper {
   abstract: string | null
   /** Canonical landing page, or null. */
   url: string | null
+  /** Folder this paper is filed under; null = uncategorized. */
+  folderId: string | null
   /** Unix epoch ms when the bookmark was created. */
   addedAt: number
 }
@@ -41,6 +58,7 @@ export interface FavoritesRejected<E> {
 
 /** Whole-collection value of {@link FavoritesListResult}. */
 export interface FavoritesListValue {
+  folders: FavoriteFolder[]
   papers: FavoritePaper[]
 }
 
@@ -56,10 +74,17 @@ export interface FavoritesDuplicateError {
   id: string
 }
 
+/** Unknown-folder failure: the request named a folder id the collection lacks. */
+export interface FavoritesFolderNotFoundError {
+  code: 'folder-not-found'
+  id: string
+}
+
 /** Result of adding one paper. */
 export type FavoritesAddResult =
   | FavoritesSuccess<FavoritePaper>
   | FavoritesRejected<FavoritesDuplicateError>
+  | FavoritesRejected<FavoritesFolderNotFoundError>
 
 /** One unbookmark request by stable id. */
 export interface FavoritesRemoveRequest {
@@ -76,3 +101,60 @@ export interface FavoritesNotFoundError {
 export type FavoritesRemoveResult =
   | FavoritesSuccess<{ removed: string }>
   | FavoritesRejected<FavoritesNotFoundError>
+
+/** One folder-create request. */
+export interface FavoritesFolderCreateRequest {
+  name: string
+}
+
+/** Invalid-name failure: the trimmed name is empty or too long. */
+export interface FavoritesFolderNameError {
+  code: 'invalid-name'
+}
+
+/** Duplicate-name failure: a folder with this name (case-insensitive) exists. */
+export interface FavoritesDuplicateFolderError {
+  code: 'duplicate-folder'
+  name: string
+}
+
+/** Result of creating one folder. */
+export type FavoritesFolderCreateResult =
+  | FavoritesSuccess<FavoriteFolder>
+  | FavoritesRejected<FavoritesFolderNameError>
+  | FavoritesRejected<FavoritesDuplicateFolderError>
+
+/** One folder-rename request. */
+export interface FavoritesFolderRenameRequest {
+  id: string
+  name: string
+}
+
+/** Result of renaming one folder. */
+export type FavoritesFolderRenameResult =
+  | FavoritesSuccess<FavoriteFolder>
+  | FavoritesRejected<FavoritesFolderNotFoundError>
+  | FavoritesRejected<FavoritesFolderNameError>
+  | FavoritesRejected<FavoritesDuplicateFolderError>
+
+/** One folder-delete request; its papers move back to uncategorized. */
+export interface FavoritesFolderDeleteRequest {
+  id: string
+}
+
+/** Result of deleting one folder. */
+export type FavoritesFolderDeleteResult =
+  | FavoritesSuccess<{ removed: string }>
+  | FavoritesRejected<FavoritesFolderNotFoundError>
+
+/** One move request: file the paper under a folder (null = uncategorized). */
+export interface FavoritesMoveRequest {
+  id: string
+  folderId: string | null
+}
+
+/** Result of moving one paper. */
+export type FavoritesMoveResult =
+  | FavoritesSuccess<{ moved: string; folderId: string | null }>
+  | FavoritesRejected<FavoritesNotFoundError>
+  | FavoritesRejected<FavoritesFolderNotFoundError>

@@ -36,6 +36,21 @@ export const zh = {
   addFavorite: '收藏',
   removeFavorite: '取消收藏',
   saved: '已收藏',
+  chooseFolder: '收藏到分类',
+  moveToFolder: '移动到分类',
+  uncategorized: '未分类',
+  allPapers: '全部',
+  newFolder: '新建分类',
+  folderName: '分类名称',
+  createFolder: '新建',
+  folderNameError: '名称无效或已存在',
+  renameFolder: '重命名',
+  deleteFolder: '删除分类',
+  deleteFolderConfirm: '确认删除',
+  confirmRename: '确认重命名',
+  cancelRename: '取消重命名',
+  cancelDelete: '取消删除',
+  folderEmpty: '该分类下还没有文献',
 }
 
 export const en = {
@@ -67,6 +82,21 @@ export const en = {
   addFavorite: 'Bookmark',
   removeFavorite: 'Remove bookmark',
   saved: 'Saved',
+  chooseFolder: 'Save to folder',
+  moveToFolder: 'Move to folder',
+  uncategorized: 'Uncategorized',
+  allPapers: 'All',
+  newFolder: 'New folder',
+  folderName: 'Folder name',
+  createFolder: 'Create',
+  folderNameError: 'Invalid or duplicate name',
+  renameFolder: 'Rename',
+  deleteFolder: 'Delete folder',
+  deleteFolderConfirm: 'Confirm delete',
+  confirmRename: 'Confirm rename',
+  cancelRename: 'Cancel rename',
+  cancelDelete: 'Cancel delete',
+  folderEmpty: 'No papers in this folder yet',
 }
 
 /** Dictionary key union owned by this plugin (locale map values are unions). */

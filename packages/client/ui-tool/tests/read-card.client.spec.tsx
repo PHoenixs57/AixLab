@@ -10,23 +10,17 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render } from '@testing-library/react'
 import { Context } from '@deepseek-ai/cordis'
 import { bindSnapshotSelector } from '@deepseek-ai/dsh-client-web-react'
-import {
-  createSnapshotStore, EMPTY_CONVERSATION_VIEWS,
-} from '@deepseek-ai/dsh-client-runtime/client'
+import { createSnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
 import { zh as commonZh } from '@deepseek-ai/dsh-client-locale/src/locales/zh.ts'
 import type {
-  ConversationSnapshot, RunningToolCall, SessionId, SessionListState, ToolResultNode, WorkspaceListState,
+  RunningToolCall, SessionId, SessionListState, ToolResultNode,
 } from '@deepseek-ai/dsh-client-runtime/client'
 import type { ToolResultView } from '@deepseek-ai/dsh-api-remotes/client'
-import type { SelectionTarget } from '@deepseek-ai/dsh-client-ui-conversation/client'
 import { CHAT_READ_MAX_LINES, readCardModel } from '../src/client/tool/models/read-card-model.ts'
-import { createChatStore } from '@deepseek-ai/dsh-client-ui-conversation/src/client/stores.ts'
 import { GenericToolCard, type GenericToolCardProps } from '../src/client/tool/toolviews/GenericToolCard.tsx'
 import { zh } from '@deepseek-ai/dsh-client-ui-conversation/src/client/locales.ts'
-import { DetailsPanel } from '@deepseek-ai/dsh-client-ui-conversation/src/client/skeleton/DetailsPanel.tsx'
 import { ReadRow, readToolview } from '../src/client/tool/toolviews/read-row.tsx'
-import { renderToolDetails, SessionProviderStub, toolChatSnapshot } from './tool-details-render.client.tsx'
 
 afterEach(cleanup)
 
@@ -248,94 +242,5 @@ describe('ReadRow keyed toolview', () => {
     // The row composes ToolRow, so it declares its locale namespace at the seat.
     expect(registered).toEqual([{ name: 'tool.call.toolview', key: 'read', locale: 'conversation' }])
     expect(readToolview.inject).toEqual(['slots'])
-  })
-})
-
-describe('DetailsPanel Output section (read)', () => {
-  function mount(snapshot: ConversationSnapshot, selection: SelectionTarget | null, cwd?: string) {
-    localStorage.clear()
-    const chat = createChatStore().create()
-    if (selection !== null) chat.actions.select(selection)
-    const sessions = createSnapshotStore<SessionListState>(cwd === undefined
-      ? { ids: [], byId: {}, current: undefined, phase: 'ready', subagentsByParent: {}, jobsBySession: {}, currentAddress: undefined }
-      : {
-        ids: [SID],
-        byId: { [SID]: { id: SID, displayTitle: 'r', running: false, blank: false, updatedAt: 0, cwd } },
-        current: SID,
-        phase: 'ready',
-        subagentsByParent: {}, jobsBySession: {},
-        currentAddress: undefined,
-      })
-    const workspaces = createSnapshotStore<WorkspaceListState>({
-      items: [], archivedSessionIds: [], state: 'idle', phase: 'ready', error: null,
-      baselinesReady: true, recentWorkspaceId: undefined,
-    })
-    return render(
-      <DetailsPanel
-        SessionProvider={SessionProviderStub}
-        renderSlot={renderToolDetails(t)}
-        sessionId={SID}
-        t={t}
-        useSession={bindSnapshotSelector({ getSnapshot: () => snapshot, subscribe: () => () => {} })}
-        useSessions={bindSnapshotSelector(sessions)}
-        useWorkspaces={bindSnapshotSelector(workspaces)}
-        useInput={(() => { throw new Error('unused') })}
-        inputActions={{
-          setDraft: () => {},
-          addImages: () => true,
-          removeImage: () => {},
-          pruneImages: () => {},
-          submit: () => {},
-        }}
-        useProjection={(() => undefined)}
-        useStore={bindSnapshotSelector(chat)}
-        actions={chat.actions}
-        closeDetails={vi.fn()}
-      />,
-    )
-  }
-
-  function snapshot(over: Partial<ConversationSnapshot> = {}): ConversationSnapshot {
-    const nodes = over.nodes ?? []
-    const runningCalls = over.runningCalls ?? []
-    return {
-      sessionId: SID, views: EMPTY_CONVERSATION_VIEWS,
-      chat: over.chat ?? toolChatSnapshot(nodes, runningCalls),
-      nodes: [], turnTimings: new Map(), turnEnds: new Map(), partial: null, runningCalls: [],
-      pending: [], queue: [], running: false, composerPhase: 'active', removed: false,
-      openState: 'open', openError: null, hasMore: false, loadingOlder: false,
-      promptError: null, blank: false, subagent: null, lastAgentError: null, ...over,
-    }
-  }
-
-  const target: SelectionTarget = { turnSeq: 10, callId: 'c1', toolName: 'read' }
-
-  it('renders the read card at full height, keeping the JSON Input section', () => {
-    const long = Array.from({ length: 20 }, (_, i) => ({ number: i + 1, text: `row-${i}` }))
-    const view = mount(snapshot({
-      nodes: [settled({ resultView: resultRead({ lines: long, totalLines: 20 }) })],
-    }), target)
-    expect(view.getByText(/"file_path"/)).toBeTruthy()
-    expect(view.container.querySelector('[data-read]')).not.toBeNull()
-    // The panel takes the primitive's own default cap (16), not the row's.
-    expect(view.getByText(`… 其余 ${20 - 16} 行`)).toBeTruthy()
-    expect(contentTexts(view.container)).toContain('row-0')
-  })
-
-  it('a non-read result keeps the flattened pre form', () => {
-    const view = mount(snapshot({
-      nodes: [settled({
-        callView: null, resultView: null,
-        content: [{ type: 'text', text: 'plain result' }],
-      })],
-    }), target)
-    expect(view.container.querySelector('[data-read]')).toBeNull()
-    expect(view.getByText('输出').closest('section')?.querySelector('pre')?.textContent).toBe('plain result')
-  })
-
-  it('a running read keeps the 运行中… placeholder (no result view)', () => {
-    const view = mount(snapshot({ runningCalls: [running()] }), target)
-    expect(view.getByText('运行中…')).toBeTruthy()
-    expect(view.container.querySelector('[data-read]')).toBeNull()
   })
 })
