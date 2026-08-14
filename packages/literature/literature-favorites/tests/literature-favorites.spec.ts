@@ -54,6 +54,7 @@ const PAPER = {
   venue: 'Journal of Examples',
   abstract: 'An abstract.',
   url: 'https://example.org/paper',
+  folderId: null,
 }
 
 describe('literature-favorites service', () => {
@@ -112,6 +113,7 @@ describe('literature-favorites service', () => {
       venue: ' ',
       abstract: ' x ',
       url: '',
+      folderId: null,
     })
     expect(result.ok).toBe(true)
     if (!result.ok) throw new Error('add failed')
