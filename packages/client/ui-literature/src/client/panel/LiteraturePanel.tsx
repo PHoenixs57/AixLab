@@ -4,8 +4,9 @@
  * It auto-opens the details column once a turn settles with new papers.
  */
 
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Context } from '@deepseek-ai/cordis'
+import { IconChevronDownOutline14, IconChevronUpOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
 import { shallowEqual } from '@deepseek-ai/dsh-client-runtime/client'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 // Type-only: pulls the conversation.details.literature SlotMap merge.
@@ -40,18 +41,28 @@ export function LiteraturePanel({ useSession, openDetails, t }: LiteraturePanelP
   // re-renders to frames whose node list actually changed.
   const snapshot = useSession(s => s, shallowEqual)
   const papers = useMemo(() => collectPapers(snapshot), [snapshot])
+  const [open, setOpen] = useState(true)
 
   useAutoOpen(papers.length, snapshot.running, openDetails)
 
   return (
     <section className={css.panel} aria-label={t('panelTitle')}>
-      <header className={css.head}>
-        <h3 className={css.title}>{t('panelTitle')}</h3>
+      <button
+        type="button"
+        className={css.head}
+        onClick={() => { setOpen(value => !value) }}
+        aria-expanded={open}
+        aria-label={t('panelTitle')}
+      >
+        <span className={css.title}>{t('panelTitle')}</span>
         <span className={css.count}>{papers.length}</span>
-      </header>
-      {papers.length === 0
+        <span className={css.chevron}>
+          {open ? <IconChevronUpOutline14 /> : <IconChevronDownOutline14 />}
+        </span>
+      </button>
+      {open && papers.length === 0
         ? <p className={css.empty}>{t('panelEmpty')}</p>
-        : (
+        : open && (
           <div className={css.list}>
             {papers.map(paper => (
               <PaperCard key={paper.id ?? `${paper.title}-${paper.rank}`} paper={paper} t={t} />

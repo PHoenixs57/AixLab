@@ -9,7 +9,7 @@ AixLab 以 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) �
 - **文献 agent 对话**：新建会话即默认进入「AixLab 文献助手」模式（也可从预设菜单切换），用自然语言（中英文均可）描述研究主题。
 - **多源检索**：通过 [literature-search-mcp](mcp/literature-search-mcp)（stdio MCP）并行检索 PubMed、Europe PMC、bioRxiv/medRxiv、Crossref、OpenAlex、Semantic Scholar、arXiv，自动去重融合。工具：`mcp__literature__literature_search` / `_sources` / `_get_fulltext`。
 - **文献卡片**：对话结束后，网页**右侧**自动展开「本次对话文献」窗口，把本次对话搜集到的所有文献（多轮检索自动去重合并）列成卡片——标题、作者、年份、期刊、DOI/PMID/arXiv 链接、开放获取标记、可折叠摘要。聊天里的检索工具行只保留摘要（"N 篇文献 + 查看卡片"按钮），不再内嵌卡片。
-- **收藏**：右侧卡片上的星标一键收藏/取消收藏；侧栏「文献收藏」面板管理收藏（删除、打开原文）；收藏持久化在服务端（`$DSH_HOME/storages/literature_favorites.json`），跨会话、跨浏览器保留，agent 也能读写（`literature_favorites_add/remove/list` 工具）。
+- **收藏**：右侧卡片上的星标一键收藏/取消收藏；侧栏「文献收藏」库默认**折叠**只显示计数（点击展开列表，长列表带滚动），逐条可删除、可打开原文；收藏持久化在服务端（`$DSH_HOME/storages/literature_favorites.json`），跨会话、跨浏览器保留，agent 也能读写（`literature_favorites_add/remove/list` 工具）。右侧「本次对话文献」窗口同样支持折叠。
 - 其他 DeepSeek Harness 能力（工作区、代码执行、子代理、goal 自动续跑等）全部保留。
 
 ## 快速开始

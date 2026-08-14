@@ -11,13 +11,30 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  width: 100%;
+  padding: 4px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.head:hover {
+  background: var(--dsw-alias-fill-hover);
 }
 
 .title {
+  flex: 1;
   margin: 0;
   font-size: 13px;
   font-weight: 600;
   color: var(--dsw-alias-label-primary);
+}
+
+.chevron {
+  display: inline-flex;
+  color: var(--dsw-alias-label-secondary);
 }
 
 .count {

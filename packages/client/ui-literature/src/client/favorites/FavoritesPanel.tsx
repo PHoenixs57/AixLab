@@ -1,12 +1,13 @@
 /**
- * Favorites panel: the `sidebar.favorites` occupant. Wide shows the saved
- * paper list with per-item remove; the rail shows a bookmark glyph with the
- * count that expands the sidebar on click.
+ * Favorites panel: the `sidebar.favorites` occupant. Wide shows a foldable
+ * saved-paper library (count always visible, list unfolds on demand) with
+ * per-item remove; the rail shows a bookmark glyph with the count that
+ * expands the sidebar on click.
  */
 
-import { useCallback, useEffect, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useSyncExternalStore, useState } from 'react'
 import type { Context } from '@deepseek-ai/cordis'
-import { IconLinkOutline14, IconTrashOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconChevronDownOutline14, IconChevronUpOutline14, IconLinkOutline14, IconTrashOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 // Type-only: pulls the sidebar.favorites SlotMap merge from the sidebar shell.
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
@@ -71,9 +72,11 @@ function markPending(id: string, on: boolean): void {
   for (const listener of pendingListeners) listener()
 }
 
-/** The sidebar favorites section. */
+/** The sidebar favorites section: a foldable library row. */
 export function FavoritesPanel({ wide, expandSidebar, t }: FavoritesPanelProps) {
   const view = useSyncExternalStore(favoritesStore.subscribe, favoritesStore.getSnapshot)
+  // Folded by default: the count stays visible, the list unfolds on demand.
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
     void favoritesStore.ensure()
@@ -97,16 +100,26 @@ export function FavoritesPanel({ wide, expandSidebar, t }: FavoritesPanelProps) 
 
   return (
     <section className={css.panel} aria-label={t('favoritesTitle')}>
-      <header className={css.head}>
-        <h3 className={css.title}>{t('favoritesTitle')}</h3>
+      <button
+        type="button"
+        className={css.head}
+        onClick={() => { setOpen(value => !value) }}
+        aria-expanded={open}
+        aria-label={t('favoritesTitle')}
+        title={t('favoritesTitle')}
+      >
+        <span className={css.title}>{t('favoritesTitle')}</span>
         {view.status === 'ready' && <span className={css.count}>{view.papers.length}</span>}
-      </header>
-      {view.status === 'loading' && <p className={css.state}>{t('favoritesLoading')}</p>}
-      {view.status === 'error' && <p className={css.state}>{t('favoritesFailed')}</p>}
-      {view.status === 'ready' && view.papers.length === 0 && (
+        <span className={css.chevron}>
+          {open ? <IconChevronUpOutline14 /> : <IconChevronDownOutline14 />}
+        </span>
+      </button>
+      {open && view.status === 'loading' && <p className={css.state}>{t('favoritesLoading')}</p>}
+      {open && view.status === 'error' && <p className={css.state}>{t('favoritesFailed')}</p>}
+      {open && view.status === 'ready' && view.papers.length === 0 && (
         <p className={css.state}>{t('favoritesEmpty')}</p>
       )}
-      {view.status === 'ready' && view.papers.length > 0 && (
+      {open && view.status === 'ready' && view.papers.length > 0 && (
         <ul className={css.list}>
           {view.papers.map((paper) => {
             const authors = paper.authors.length === 0
