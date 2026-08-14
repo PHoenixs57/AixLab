@@ -3,5 +3,7 @@
 # Usage: pnpm dsh web --patch dev.cordis.yml
 - id: webserver
   config:
-    host: 127.0.0.1
+    # Bind all interfaces so the product is reachable from the LAN the same
+    # way other dev services are; loopback stays available on 127.0.0.1:3090.
+    host: 0.0.0.0
     port: 3090

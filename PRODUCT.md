@@ -8,8 +8,8 @@ AixLab 以 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) �
 
 - **文献 agent 对话**：新建会话即默认进入「AixLab 文献助手」模式（也可从预设菜单切换），用自然语言（中英文均可）描述研究主题。
 - **多源检索**：通过 [literature-search-mcp](mcp/literature-search-mcp)（stdio MCP）并行检索 PubMed、Europe PMC、bioRxiv/medRxiv、Crossref、OpenAlex、Semantic Scholar、arXiv，自动去重融合。工具：`mcp__literature__literature_search` / `_sources` / `_get_fulltext`。
-- **文献卡片**：检索结果自动渲染为卡片——标题、作者、年份、期刊、DOI/PMID/arXiv 链接、开放获取标记、可折叠摘要；全文结果按章节折叠展示；来源工具显示数据源能力表。
-- **收藏**：卡片上的星标一键收藏/取消收藏；侧栏「文献收藏」面板管理收藏（删除、打开原文）；收藏持久化在服务端（`$DSH_HOME/storages/literature_favorites.json`），跨会话、跨浏览器保留，agent 也能读写（`literature_favorites_add/remove/list` 工具）。
+- **文献卡片**：对话结束后，网页**右侧**自动展开「本次对话文献」窗口，把本次对话搜集到的所有文献（多轮检索自动去重合并）列成卡片——标题、作者、年份、期刊、DOI/PMID/arXiv 链接、开放获取标记、可折叠摘要。聊天里的检索工具行只保留摘要（"N 篇文献 + 查看卡片"按钮），不再内嵌卡片。
+- **收藏**：右侧卡片上的星标一键收藏/取消收藏；侧栏「文献收藏」面板管理收藏（删除、打开原文）；收藏持久化在服务端（`$DSH_HOME/storages/literature_favorites.json`），跨会话、跨浏览器保留，agent 也能读写（`literature_favorites_add/remove/list` 工具）。
 - 其他 DeepSeek Harness 能力（工作区、代码执行、子代理、goal 自动续跑等）全部保留。
 
 ## 快速开始
@@ -62,7 +62,9 @@ aixlab/
 
 1. 用户在 Web GUI 对话 → agent 调用 `mcp__literature__literature_search`（宿主层 mcp-client 行挂载的 stdio MCP，所有会话可见；预设贡献人设与技能）。
 2. MCP 服务返回 JSON（`SearchResponse{results: LiteratureResult[]}`），结果文本写入会话事件流。
-3. 客户端 `ui-literature` 按工具名注册 keyed toolview，从结果文本解析 JSON 并渲染文献卡片（折叠摘要、链接徽章、收藏星标）。
+3. 客户端 `ui-literature` 分两处消费这些结果：
+   - **右侧文献窗口**（`conversation.details.literature` 槽位）：从当前会话快照聚合所有 `literature_search` 结果（去重），渲染卡片列表；对话轮次结束后自动展开右侧列。
+   - **聊天工具行**（keyed toolview）：检索行只显示摘要 + 「查看卡片」按钮；全文/来源行保留行内折叠视图。
 4. 收藏星标 → 客户端经 Typert Remote（`literatureFavorites` 命名空间）调用宿主 `literature-favorites` 服务 → 写入 storage-domain 的 `literature_favorites` 域（`$DSH_HOME/storages/literature_favorites.json`）→ 侧栏收藏面板即时同步。
 
 **为什么 MCP 与收藏服务放在宿主层而不是预设里**：预设挂载的审计会拒绝把 Service 发布进根域的预设行，且预设子树里的工具注册不会进入 agent 的请求目录；文献工具是本产品的核心能力，属于宿主组成。

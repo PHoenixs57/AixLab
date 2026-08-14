@@ -91,6 +91,9 @@ export function DetailsPanel({ useSession, useSessions, sessionId, useStore, ren
         </button>
       </div>
       <div className={css.body}>
+        {/* The literature window: papers collected this conversation, owned
+            by the literature UI plugin. Always mounted above tool details. */}
+        {renderSlot('conversation.details.literature', {})}
         {selection === null || callId === undefined
           ? <div className={css.empty}>{t('details.empty')}</div>
           : material === null

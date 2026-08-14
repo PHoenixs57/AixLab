@@ -110,45 +110,42 @@ async function main() {
   await composer.fill('帮我搜集 IL-6 信号通路在类风湿关节炎中的最新文献，3 篇即可。')
   await page.getByRole('button', { name: '发送消息' }).first().click()
 
-  // Wait for the literature tool row (paper cards) then the assistant reply.
-  console.log('7. wait for literature tool row')
+  // Wait for the chat to settle: the right details column auto-opens with the
+  // literature window once the turn ends and papers are collected.
+  console.log('7. wait for right-side literature panel')
   try {
-    await page.getByText('Literature Search', { exact: false }).first().waitFor({ timeout: 180_000 })
-    console.log('   tool row appeared')
+    await page.getByText('本次对话文献', { exact: false }).first().waitFor({ timeout: 180_000 })
+    console.log('   panel header appeared')
   } catch {
-    console.log('   ! tool row did not appear; taking shot')
-    await page.screenshot({ path: `${SHOTS}/04-no-row.png` })
+    console.log('   ! panel header did not appear; taking shot')
+    await page.screenshot({ path: `${SHOTS}/04-no-panel.png` })
   }
-  await page.waitForTimeout(4000)
-  await page.screenshot({ path: `${SHOTS}/04-tool-row.png` })
 
-  // Expand the row body (click the row head) and a paper card.
-  console.log('8. expand tool row')
-  await page.getByText('Literature Search', { exact: false }).first().click()
-  await page.waitForTimeout(800)
-  await page.screenshot({ path: `${SHOTS}/05-cards.png` })
-
-  // Favorite the first card via its star (aria-label 收藏).
-  console.log('9. favorite first paper')
+  // The cards render inside the right panel; wait for a star to exist.
   const star = page.getByRole('button', { name: '收藏' }).first()
+  try {
+    await star.waitFor({ timeout: 30_000 })
+    console.log('   panel cards rendered, stars:', await page.getByRole('button', { name: '收藏' }).count())
+  } catch {
+    console.log('   ! no star buttons in panel')
+  }
+  await page.screenshot({ path: `${SHOTS}/04-panel.png` })
+
+  // Favorite the first paper in the panel.
+  console.log('8. favorite first paper in the right panel')
   if (await star.count() > 0) {
-    await star.click()
-    await page.waitForTimeout(1500)
+    await star.click({ force: true })
+    await page.waitForTimeout(2000)
     console.log('   starred')
-  } else {
-    console.log('   ! star button not found')
   }
 
-  // Wait for the assistant's final text and take the final shot.
-  await page.waitForTimeout(8000)
-  await page.screenshot({ path: `${SHOTS}/06-final.png` })
-
-  // Favorites panel probe: expand sidebar if collapsed, read panel text.
+  // Verify the sidebar favorites section reflects the bookmark.
   const panelText = await page.evaluate(() => {
-    const body = document.body.innerText
-    return body.includes('文献收藏') ? '文献收藏 visible' : 'panel not visible'
+    const match = document.body.innerText.match(/文献收藏[\s\S]{0,140}/)
+    return match ? match[0].replace(/\n/g, ' | ').slice(0, 140) : '(not found)'
   })
-  console.log('10. favorites panel:', panelText)
+  console.log('9. sidebar favorites:', panelText)
+  await page.screenshot({ path: `${SHOTS}/06-final.png` })
 
   await browser.close()
   console.log('done; screenshots in e2e-shots/')

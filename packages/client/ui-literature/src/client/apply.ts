@@ -6,6 +6,7 @@ import type {} from '@deepseek-ai/dsh-api-remotes/client'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import { favoritesStore } from './favorites/store.ts'
 import { favoritesPanelPlugin } from './favorites/FavoritesPanel.tsx'
+import { literaturePanelPlugin } from './panel/LiteraturePanel.tsx'
 import { literatureToolview } from './toolviews/literature-row.tsx'
 import { NS, en, zh } from './locale.ts'
 
@@ -27,5 +28,6 @@ export function apply(ctx: ClientContext): void {
   ctx.on('connection/reset', () => { favoritesStore.resync() })
 
   ctx.plugin(literatureToolview)
+  ctx.plugin(literaturePanelPlugin)
   ctx.plugin(favoritesPanelPlugin)
 }

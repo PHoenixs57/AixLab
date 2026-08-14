@@ -123,6 +123,15 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
      */
     'conversation.details.tool': { kind: 'single'; scope: 'session'; owner: DetailsToolOwnerProps }
     /**
+     * The literature section of the details panel: the papers this session's
+     * literature searches collected, rendered as cards by the literature UI
+     * plugin. Rendered above the tool-details body so the right column reads
+     * as a persistent "papers collected this conversation" window; the
+     * registrant receives no owner props (session facts arrive through the
+     * framework hooks).
+     */
+    'conversation.details.literature': { kind: 'single'; scope: 'session'; owner: Record<string, never> }
+    /**
      * The composer takeover chain: entries are selector-routed replacements
      * of the default InputBar. Declared by this package's 'conversation'
      * entry; the owner dispatches the {@link ComposerChainProps} currency and
@@ -721,8 +730,8 @@ export interface DetailsInjected {
   closeDetails: () => void
 }
 
-/** Full details-slot props: selection store, Tool output seat, injected close callback, and locale. */
-export type DetailsSlotProps = PropsRuntime<'details'> & PropsRenderSlots<'conversation.details.tool'>
+/** Full details-slot props: selection store, Tool output seat, literature seat, injected close callback, and locale. */
+export type DetailsSlotProps = PropsRuntime<'details'> & PropsRenderSlots<'conversation.details.tool' | 'conversation.details.literature'>
   & PropsStore<ChatStore> & DetailsInjected & PropsLocale<'conversation'>
 
 /** Owner share common to the hero / New-Session Workspace pickers. */
