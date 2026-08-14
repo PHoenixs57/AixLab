@@ -1,0 +1,16 @@
+{
+  "id": "/",
+  "name": "AixLab",
+  "short_name": "AixLab",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

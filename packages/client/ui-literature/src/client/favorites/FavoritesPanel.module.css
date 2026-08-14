@@ -1,0 +1,142 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 4px;
+}
+
+.rail {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.rail:hover {
+  background: var(--dsw-alias-fill-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+.railCount {
+  position: absolute;
+  top: 2px;
+  right: 6px;
+  min-width: 14px;
+  padding: 0 3px;
+  border-radius: 7px;
+  background: var(--dsw-alias-accent, #4f6ef7);
+  color: #fff;
+  font-size: 10px;
+  line-height: 14px;
+  text-align: center;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px;
+}
+
+.title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dsw-alias-label-primary);
+}
+
+.count {
+  padding: 0 6px;
+  border-radius: 8px;
+  background: var(--dsw-alias-fill-secondary);
+  font-size: 11px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.state {
+  margin: 2px 4px;
+  font-size: 11px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.item:hover {
+  background: var(--dsw-alias-fill-hover);
+}
+
+.itemBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemTitle {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--dsw-alias-label-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.itemLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.itemLink:hover {
+  text-decoration: underline;
+}
+
+.itemMeta {
+  margin: 1px 0 0;
+  font-size: 11px;
+  color: var(--dsw-alias-label-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemAction {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--dsw-alias-label-secondary);
+  text-decoration: none;
+}
+
+.itemAction:hover {
+  background: var(--dsw-alias-fill-secondary);
+  color: var(--dsw-alias-label-primary);
+}

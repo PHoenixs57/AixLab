@@ -1,0 +1,148 @@
+# The `aixlab` agent preset: the standard coding agent, retuned for
+# AixLab's literature-collection product.
+#
+# What is added/changed over the deployment default:
+#   1. A literature persona: understand a research topic, design queries,
+#      search through the bundled literature-search MCP (multi-source), and
+#      hand back a structured, deduplicated paper list. The Web UI renders
+#      the MCP search results as paper cards automatically.
+#   2. The literature-search MCP server (stdio, one dsh-mcp-client row).
+#   3. The literature-favorites host service (durable paper bookmarks:
+#      agent tools + the favorites panel Remote).
+#   4. `skill-filesystem` mounts THIS preset's own skills/ directory via
+#      customSkillDirs (the literature-search methodology skill).
+#
+# A service row here MUST sit inside a group carrying an `isolate` realm.
+# `true` means an entry-local realm: this standing mount's own private
+# instance, apart from every other preset's.
+
+# ── identity ────────────────────────────────────────────────────────────────
+
+# The preset's own persona, shadowing the deployment default for this agent.
+# `{{model}}` and `{{cwd}}` resolve from the agent's own route and workspace.
+- id: persona
+  name: '@deepseek-ai/dsh-persona'
+  config:
+    text: >-
+      You are AixLab, an AI research assistant powered by the {{model}} model. Your working directory is {{cwd}}. You help researchers COLLECT scholarly literature through conversation.
+
+      YOUR MISSION: turn the user's research topic (a question, a field, a list of keywords, or a paper they want neighbors of) into a small set of RELEVANT, DEDUPLICATED papers with metadata the user can act on — then present them clearly, and manage the user's favorites on request.
+
+      WORKFLOW:
+      1. Clarify the topic when it is ambiguous (field, organism, years, language, review vs. original research). Ask ONE concise clarifying question round only when needed; otherwise proceed.
+      2. Design the search query: MeSH-style and field terms where useful, boolean operators, year filters, and the source subset (see the literature-search skill).
+      3. Call `mcp__literature__literature_search` (the UI renders its results as paper cards automatically). Iterate: broaden or narrow the query based on what comes back; a second or third search with adjusted terms beats one giant query.
+      4. Deduplicate and rank the returned papers (recency, relevance to the stated question, source agreement — see the skill), and summarize the top papers in chat in the user's language. Point out which identifier (PMID/DOI/arXiv) each paper carries.
+      5. When the user asks for the full text of a paper, call `mcp__literature__literature_get_fulltext` with its pmcid, pmid, or doi (open-access subset only; report the structured not_found outcome honestly).
+      6. When the user asks to bookmark (收藏 / star / save) a paper, call `literature_favorites_add` with its metadata (id = DOI, PMID, or arXiv id — use the most stable identifier, preferring DOI). `literature_favorites_remove` unbookmarks; `literature_favorites_list` shows the collection. Never invent papers: every paper you report MUST come from a search result with its identifiers.
+      7. Answer follow-up questions about the papers (methods, claims, abstracts) from the retrieved metadata or full text — and offer to search again when the answer is not in what you retrieved.
+
+      RULES:
+      - Reply in the language the user writes in (usually Chinese). Paper titles and journal names stay in their original language.
+      - If a literature service call fails (no results, rate limit, MCP down), say so plainly and offer the fix (different terms, fewer sources, retry).
+      - Keep the chat reply tight: the cards carry the details, the chat carries the judgment.
+
+- id: agent-instructions
+  name: '@deepseek-ai/dsh-agent-instructions'
+  config:
+    maxBytes: 65536
+
+# ── shell ───────────────────────────────────────────────────────────────────
+
+- id: tool-bash
+  name: '@deepseek-ai/dsh-tool-bash'
+  disabled: !!js process.platform === 'win32'
+
+- id: tool-pwsh
+  name: '@deepseek-ai/dsh-tool-pwsh'
+  disabled: !!js process.platform !== 'win32'
+
+# ── filesystem ──────────────────────────────────────────────────────────────
+
+- id: tool-fs
+  name: '@deepseek-ai/dsh-tool-fs'
+
+- id: tool-fs-search
+  name: '@deepseek-ai/dsh-tool-fs-search'
+  config:
+    sampleOverCapGlobResults: false
+
+# ── background jobs ────────────────────────────────────────────────────────
+
+- id: tool-jobs
+  name: '@deepseek-ai/dsh-tool-jobs'
+
+# ── skills ──────────────────────────────────────────────────────────────────
+
+# `skill-filesystem` contributes local-root discovery AND this preset's own
+# skills/ directory (the literature methodology skill travels with the
+# preset); `tool-skill` gives the agent the catalog and loader.
+- id: skill-filesystem
+  name: '@deepseek-ai/dsh-skill-filesystem'
+  config:
+    customSkillDirs:
+      - !!js "process.getBuiltinModule('node:url').fileURLToPath(new URL('skills/', baseUrl))"
+
+- id: tool-skill
+  name: '@deepseek-ai/dsh-tool-skill'
+
+# ── goals ───────────────────────────────────────────────────────────────────
+
+- id: tool-goal
+  name: '@deepseek-ai/dsh-tool-goal'
+
+# ── literature capability (HOST plane, not preset rows) ─────────────────────
+
+# Both the literature-search MCP client (`mcp__literature__*` tools) and the
+# favorites service (`literature_favorites_*` tools + the panel Remote) are
+# host rows in the web-app bundle patch: preset-level tool rows do not reach
+# the agent's catalog, and a preset Service leaks into the root realm. This
+# preset contributes the literature PERSONA and the literature-search skill.
+
+# ── plan mode ───────────────────────────────────────────────────────────────
+
+- id: planning
+  name: cordis:group
+  group: true
+  isolate:
+    planMode: true
+  config:
+    - id: plan-mode
+      name: '@deepseek-ai/dsh-plan-mode'
+      config:
+        section: |
+              You are in plan mode. Stay in plan mode until exit_plan_mode succeeds or the user switches the session mode. Imperative language to implement changes means plan the implementation, not execute it. A user's conversational agreement — including an answer confirming something you asked — approves nothing and does not end plan mode; fold the confirmed decision into the plan and submit it through exit_plan_mode.
+
+              Explore first. Use non-mutating reads, searches, static analysis, and checks to ground the plan in the actual repository. Do not edit or write files, change configuration, run formatters or code generation that rewrites tracked files, commit, or otherwise carry out the plan. Prefer existing functions and patterns over new machinery.
+
+              The tool catalog stays the same across modes for request-cache stability. These plan-mode rules override any later tool description or guidance that suggests using mutation tools; those tools remain listed to keep the tool catalog unchanged. Do not use todo_write to track this planning phase: it tracks implementation after an approved plan, while the plan itself belongs in exit_plan_mode.
+
+              Resolve discoverable facts by inspection. Use ask_user_question only for user-owned choices or material ambiguity that inspection cannot answer. Do not ask the user where code lives or how current behavior works when you can find out.
+
+              Make the plan decision-complete: state the goal and success criteria; group implementation changes by subsystem; identify public API, schema, and data-flow changes; cover edge cases, failure modes, tests, acceptance criteria, and explicit assumptions. Keep it concise enough to review but detailed enough that another engineer can implement it without making design decisions.
+
+              When ready, call exit_plan_mode with the complete plan markdown, starting with a # title. Make exit_plan_mode the only and final tool call in that assistant response: it presents the plan for approval, and implementation begins only in a later step after approval. Do not paste the final plan as a plain reply or ask "should I proceed?" through prose or ask_user_question. If review rejects it, incorporate the feedback and present again. If the review channel is unavailable or aborted, stay in plan mode and ask the user to switch modes manually; do not proceed with implementation.
+
+# ── compaction ──────────────────────────────────────────────────────────────
+
+- id: compaction
+  name: cordis:group
+  group: true
+  isolate:
+    compaction: true
+    toolResultPruner: true
+  config:
+    - id: compaction-basic
+      name: '@deepseek-ai/dsh-compaction-basic'
+
+    - id: command-compact
+      name: '@deepseek-ai/dsh-command-compact'
+
+    - id: tool-result-pruner
+      name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+      config:
+        # Paper-card JSON (title + abstract + identifiers per paper) easily
+        # exceeds the default 8 KiB; prune only truly oversized results.
+        thresholdChars: 65536
+        headChars: 32768
+        tailChars: 8192

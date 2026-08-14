@@ -1,0 +1,3 @@
+name: AixLab 文献助手
+description: AixLab 文献搜集 Agent：用对话描述研究主题，通过 literature-search MCP 多源检索（PubMed / Europe PMC / bioRxiv / Crossref / OpenAlex / Semantic Scholar / arXiv），把结果整理为可折叠、可收藏的文献卡片。
+order: 1

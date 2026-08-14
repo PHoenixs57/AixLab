@@ -1,0 +1,7 @@
+# AixLab dev overlay: pin the product GUI off the default 3080 so it never
+# collides with another dsh web instance on this machine.
+# Usage: pnpm dsh web --patch dev.cordis.yml
+- id: webserver
+  config:
+    host: 127.0.0.1
+    port: 3090

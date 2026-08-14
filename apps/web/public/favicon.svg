@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="50.000000" height="50.000000" viewBox="0 0 50 50" fill="none">
+	<style>
+		@media (prefers-color-scheme: dark) {
+			path { fill: #fff; }
+		}
+	</style>
+	<path d="M12 7.5C12 6.119 13.119 5 14.5 5H30L40 15V40.5C40 41.881 38.881 43 37.5 43H14.5C13.119 43 12 41.881 12 40.5V7.5Z" fill="#000" fill-opacity="1.000000" fill-rule="nonzero"/>
+	<path d="M30 5V14C30 14.552 30.448 15 31 15H40L30 5Z" fill="#000" fill-opacity="1.000000" fill-rule="nonzero"/>
+	<circle cx="30.5" cy="30" r="8.5" fill="#000" fill-opacity="1.000000" fill-rule="nonzero"/>
+	<path d="M36.8 36.3L43 42.5L40.5 45L34.3 38.8L36.8 36.3Z" fill="#000" fill-opacity="1.000000" fill-rule="nonzero"/>
+	<path d="M26 29.5C26 27.0147 28.0147 25 30.5 25C32.9853 25 35 27.0147 35 29.5C35 31.9853 32.9853 34 30.5 34C28.0147 34 26 31.9853 26 29.5Z" fill="#fff" fill-opacity="1.000000" fill-rule="nonzero"/>
+</svg>
