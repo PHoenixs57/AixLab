@@ -1,5 +1,5 @@
 /**
- * Durable per-user literature favorites for AixLab.
+ * Durable per-user literature favorites for deepseek-aix.
  *
  * Host half: a Typert Remote service (the favorites panel's face over one
  * global storage-domain row) plus model-facing tools so the agent can

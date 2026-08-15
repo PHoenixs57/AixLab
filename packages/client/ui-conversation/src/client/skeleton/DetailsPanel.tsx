@@ -1,4 +1,4 @@
-// DetailsPanel: the right-side details column. AixLab hosts only the
+// DetailsPanel: the right-side details column. deepseek-aix hosts only the
 // literature window here ("papers collected this conversation"); the
 // upstream tool-details body (click a tool row to see its input/output) was
 // removed.

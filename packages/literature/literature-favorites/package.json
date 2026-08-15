@@ -1,6 +1,6 @@
 {
   "name": "@deepseek-ai/dsh-literature-favorites",
-  "description": "Durable per-user literature favorites (paper bookmarks) for AixLab: agent tools plus a client-visible Remote service over the storage-domain seam",
+  "description": "Durable per-user literature favorites (paper bookmarks) for deepseek-aix: agent tools plus a client-visible Remote service over the storage-domain seam",
   "version": "0.1.0-rc.5",
   "publishConfig": {
     "access": "public"

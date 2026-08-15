@@ -1,6 +1,6 @@
-# AixLab Remotion Studio
+# deepseek-aix Remotion Studio
 
-用 React 写「会动的界面素材」，headless 渲染成 GIF / WebM / MP4。服务于 AixLab 聊天界面的美化：logo 动效、加载指示、消息入场动画、动态背景。
+用 React 写「会动的界面素材」，headless 渲染成 GIF / WebM / MP4。服务于 deepseek-aix 聊天界面的美化：logo 动效、加载指示、消息入场动画、动态背景。
 
 ## 命令
 

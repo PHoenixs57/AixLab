@@ -1,4 +1,4 @@
-// AixLab brand palette shared by every composition. Keep new compositions
+// deepseek-aix brand palette shared by every composition. Keep new compositions
 // on-palette so the generated assets match the web app theme.
 export const palette = {
   primary: '#4D6BFE',

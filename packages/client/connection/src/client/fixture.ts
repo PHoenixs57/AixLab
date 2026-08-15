@@ -253,11 +253,11 @@ const READ_SAMPLE_TEXT = READ_SAMPLE_SOURCE.map((text, index) => `${READ_SAMPLE_
  * search view minus its wire discriminants.
  */
 const WEB_SEARCH_RESULT: Omit<Extract<ToolResultView, { card: 'web'; kind: 'search' }>, 'card' | 'kind'> = {
-  answer: 'AixLab is an AI research assistant for scholarly literature: an agent chat that collects papers and presents them as collapsible, bookmarkable cards.',
+  answer: 'deepseek-aix is an AI research assistant for scholarly literature: an agent chat that collects papers and presents them as collapsible, bookmarkable cards.',
   sources: [
     {
       url: 'https://github.com/deepseek-ai/deepseek-harness',
-      title: 'AixLab — AI research assistant',
+      title: 'deepseek-aix — AI research assistant',
       snippet: 'Agent chat for literature collection with paper cards and favorites.',
       publishedAt: '2026-07-01',
     },

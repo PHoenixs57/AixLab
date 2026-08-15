@@ -1,4 +1,4 @@
-# AixLab dev overlay: pin the product GUI off the default 3080 so it never
+# deepseek-aix dev overlay: pin the product GUI off the default 3080 so it never
 # collides with another dsh web instance on this machine.
 # Usage: pnpm dsh web --patch dev.cordis.yml
 - id: webserver

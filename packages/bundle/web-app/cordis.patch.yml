@@ -446,6 +446,6 @@
     - id: agent-presets
       name: '@deepseek-ai/dsh-agent-presets'
       config:
-        # AixLab is a literature-first product: new sessions default to the
+        # deepseek-aix is a literature-first product: new sessions default to the
         # bundled literature assistant preset (config/agent-presets/aixlab).
         default: aixlab

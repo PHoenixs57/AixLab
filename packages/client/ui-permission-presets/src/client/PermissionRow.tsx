@@ -12,7 +12,7 @@ import {
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PermissionSettingsState } from './settings-store.ts'
 import type { PermissionSettingsKey } from './locales.ts'
-import { FULL_ACCESS_PRESET } from './presentation.ts'
+import { displayPresetLabel, FULL_ACCESS_PRESET } from './presentation.ts'
 import css from './PermissionRow.module.css'
 
 /** Registration-side business face for the host-backed preference. */
@@ -58,8 +58,13 @@ export function PermissionRow({ load, select, usePermission, t }: PermissionRowP
   if (state.status === 'unavailable') return null
   const selected = state.options.find(option => option.id === state.currentValue)
   const busy = state.status === 'loading' || state.status === 'saving' || confirmingFullAccess
-  const label = selected?.label
-    ?? (busy ? t('loading') : t('unavailable'))
+  // Known machine values translate through the row's locale seat; host
+  // labels for custom presets pass through unchanged.
+  const labelOf = (option: PermissionSettingsState['options'][number]): string =>
+    displayPresetLabel(option.id, option.label, t)
+  const label = selected === undefined
+    ? (busy ? t('loading') : t('unavailable'))
+    : labelOf(selected)
   const description: string = state.error ?? t('description')
 
   return (
@@ -72,7 +77,7 @@ export function PermissionRow({ load, select, usePermission, t }: PermissionRowP
         <Menu
           open={open}
           onClose={() => { setOpen(false) }}
-          items={state.options.map(option => ({ id: option.id, label: option.label }))}
+          items={state.options.map(option => ({ id: option.id, label: labelOf(option) }))}
           selectedId={state.currentValue}
           onSelect={(id) => {
             setOpen(false)

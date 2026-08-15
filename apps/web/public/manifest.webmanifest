@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "AixLab",
-  "short_name": "AixLab",
+  "name": "deepseek-aix",
+  "short_name": "deepseek-aix",
   "start_url": "/",
   "scope": "/",
   "display": "fullscreen",

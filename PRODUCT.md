@@ -1,12 +1,12 @@
-# AixLab — 科研文献助手
+# deepseek-aix — 科研文献助手
 
-AixLab 是一个面向科学研究的 AI 助手产品：用**对话**描述研究主题，agent 通过内置的多源文献检索服务搜集文献，并把结果渲染成**可折叠、可收藏的文献卡片**。
+deepseek-aix 是一个面向科学研究的 AI 助手产品：用**对话**描述研究主题，agent 通过内置的多源文献检索服务搜集文献，并把结果渲染成**可折叠、可收藏的文献卡片**。
 
-AixLab 以 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 为底座 fork 而来：保留其完整的 agent 基础设施（会话、工具、子代理、工作流、Web GUI），品牌替换为 AixLab，并新增文献能力。
+deepseek-aix 以 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 为底座 fork 而来：保留其完整的 agent 基础设施（会话、工具、子代理、工作流、Web GUI），品牌替换为 deepseek-aix，并新增文献能力。
 
 ## 功能
 
-- **文献 agent 对话**：新建会话即默认进入「AixLab 文献助手」模式（也可从预设菜单切换），用自然语言（中英文均可）描述研究主题。
+- **文献 agent 对话**：新建会话即默认进入「deepseek-aix 文献助手」模式（也可从预设菜单切换），用自然语言（中英文均可）描述研究主题。
 - **多源检索**：通过 [literature-search-mcp](mcp/literature-search-mcp)（stdio MCP）并行检索 PubMed、Europe PMC、bioRxiv/medRxiv、Crossref、OpenAlex、Semantic Scholar、arXiv，自动去重融合。工具：`mcp__literature__literature_search` / `_sources` / `_get_fulltext`。
 - **文献卡片**：对话结束后，网页**右侧**自动展开「本次对话文献」窗口，把本次对话搜集到的所有文献（多轮检索自动去重合并）列成卡片——标题、作者、年份、期刊、DOI/PMID/arXiv 链接、开放获取标记、可折叠摘要。聊天里的检索工具行只保留摘要（"N 篇文献 + 查看卡片"按钮），不再内嵌卡片。
 - **收藏（文件夹分类）**：右侧卡片上的星标一键收藏；点星标会弹出「收藏到分类」窗口，可把文献存进已有的分类文件夹或现场新建一个（不选则进「未分类」）。侧栏「文献收藏」是一个**扁平文件管理器**：按「全部 / 未分类 / 各分类文件夹」浏览，可新建、重命名、删除分类（删除时其中文献自动移回未分类，不丢文献），每篇文献可经「移动到分类」换文件夹；收藏持久化在服务端（`$DSH_HOME/storages/literature_favorites.json`），跨会话、跨浏览器保留，agent 也能读写（`literature_favorites_add/remove/list/folder_create/folder_rename/folder_delete/move` 工具，`add`/`move` 可带 `folder` 分类名，不存在时自动创建）。右侧「本次对话文献」窗口同样支持折叠。
@@ -26,7 +26,7 @@ pnpm run build:web              # 构建 Web 前端（Vite shell）
 pnpm dsh web --patch dev.cordis.yml
 ```
 
-打开 `http://127.0.0.1:3090` → 新建会话（默认就是「AixLab 文献助手」）→ 例如输入：
+打开 `http://127.0.0.1:3090` → 新建会话（默认就是「deepseek-aix 文献助手」）→ 例如输入：
 
 > 帮我搜集 IL-6 信号通路在类风湿关节炎中的最新文献，3 篇即可。
 
@@ -41,7 +41,7 @@ pnpm dsh web --patch dev.cordis.yml
 
 ```
 aixlab/
-├── apps/cli/config/agent-presets/aixlab/   # 随产品发布的「AixLab 文献助手」预设
+├── apps/cli/config/agent-presets/aixlab/   # 随产品发布的「deepseek-aix 文献助手」预设
 │   ├── preset.yml                          #   模式名与描述
 │   ├── agent.cordis.yml                    #   文献人设 + 工具组装 + 计划模式 + 压缩策略
 │   └── skills/literature-search/           #   文献检索方法论技能（随预设发布）
@@ -53,7 +53,7 @@ aixlab/
 │   └── client/ui-sidebar/                  # 改动：新增 sidebar.favorites 槽位
 ├── packages/api/remotes/                   # 改动：注册 literatureFavorites Remote 贡献
 ├── packages/bundle/web-app/cordis.patch.yml  # 宿主行（mcp + favorites）+ roster 行 + 默认预设
-├── apps/web/                               # 品牌：title / manifest / favicon / logo（AixLab）
+├── apps/web/                               # 品牌：title / manifest / favicon / logo（deepseek-aix）
 ├── scripts/e2e-smoke.mjs                   # GUI 端到端冒烟脚本（Playwright）
 └── dev.cordis.yml                          # 开发端口 overlay（3090）
 ```

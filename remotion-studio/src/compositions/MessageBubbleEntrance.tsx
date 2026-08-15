@@ -78,7 +78,7 @@ export const MessageBubbleEntrance: React.FC = () => {
               opacity: text,
             }}
           >
-            你好，我是 AixLab 助手，
+            你好，我是 deepseek-aix 助手，
             <br />
             可以帮你搜集和整理文献 👋
           </div>

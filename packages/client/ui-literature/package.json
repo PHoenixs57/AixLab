@@ -1,6 +1,6 @@
 {
   "name": "@deepseek-ai/dsh-client-ui-literature",
-  "description": "Client literature UI for AixLab: paper cards for the literature MCP tools plus the favorites panel",
+  "description": "Client literature UI for deepseek-aix: paper cards for the literature MCP tools plus the favorites panel",
   "version": "0.1.0-rc.5",
   "publishConfig": {
     "access": "public"

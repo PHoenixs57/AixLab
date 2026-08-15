@@ -3,7 +3,7 @@ name: literature-search
 description: Use when the user asks to find, collect, or review scholarly literature — building queries for the literature-search MCP tools (mcp__literature__literature_search / literature_sources / literature_get_fulltext), deduplicating and ranking results, or turning results into the structured paper-card list and managing favorites (literature_favorites_*).
 ---
 
-# Literature search with the AixLab multi-source MCP
+# Literature search with the deepseek-aix multi-source MCP
 
 The literature capability rides one MCP server (serverName `literature`) exposed as three tools:
 

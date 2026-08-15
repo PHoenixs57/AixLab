@@ -7,7 +7,7 @@ import {
 } from 'remotion'
 import { entranceSpring, palette } from '../design'
 
-// AixLab brand mark entrance: the document sheet slides up, the loupe ring
+// deepseek-aix brand mark entrance: the document sheet slides up, the loupe ring
 // draws itself around the page, the handle follows, and a soft glow pulse
 // settles in. Mirrors FishLogo's 24x24 geometry, scaled up.
 export const AixlabLogoEntrance: React.FC = () => {
@@ -88,7 +88,7 @@ export const AixlabLogoEntrance: React.FC = () => {
           transform: `translateY(${interpolate(wordmark, [0, 1], [24, 0])}px)`,
         }}
       >
-        AixLab
+        deepseek-aix
       </div>
     </AbsoluteFill>
   )

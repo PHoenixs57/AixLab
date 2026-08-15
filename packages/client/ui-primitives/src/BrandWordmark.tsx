@@ -1,4 +1,4 @@
-// AixLab brand wordmark: the microscope product icon + "AixLab" letterforms.
+// deepseek-aix brand wordmark: the microscope product icon + "deepseek-aix" letterforms.
 // Native mark 512x512 rendered at `size`; the letterforms ride currentColor,
 // the raster mark does not — light and dark image variants toggle on the
 // theme marker (body[data-ds-dark-theme]).
@@ -44,7 +44,7 @@ export function BrandWordmark({ size = 24, className }: IconProps) {
         alt=""
         draggable={false}
       />
-      <span>AixLab</span>
+      <span>deepseek-aix</span>
     </span>
   )
 }

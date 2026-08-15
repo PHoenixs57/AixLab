@@ -63,8 +63,8 @@ function mount(version?: string, mutateImpl: () => Promise<unknown> = () => Prom
 describe('WelcomeNotice', () => {
   it('uses the exact owner copy in both GUI locales', () => {
     expect(WELCOME_NOTICE_COPY.en).toEqual({
-      title: 'Welcome to AixLab',
-      body: 'AixLab is an AI assistant for scientific research: describe a research topic in conversation and AixLab collects relevant literature through its built-in multi-source search service (PubMed, arXiv, Semantic Scholar, Crossref and more), presenting the results as collapsible, bookmarkable paper cards.\n\nThe current release is still in internal testing; the interface and capabilities will keep evolving. Feedback is welcome.',
+      title: 'Welcome to deepseek-aix',
+      body: 'deepseek-aix is an AI assistant for scientific research: describe a research topic in conversation and deepseek-aix collects relevant literature through its built-in multi-source search service (PubMed, arXiv, Semantic Scholar, Crossref and more), presenting the results as collapsible, bookmarkable paper cards.\n\nThe current release is still in internal testing; the interface and capabilities will keep evolving. Feedback is welcome.',
       continueLabel: 'Continue',
     })
     expect(en.welcomeBody).toBe(WELCOME_NOTICE_COPY.en.body)

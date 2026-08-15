@@ -358,7 +358,7 @@ export class SystemPrompt extends Service {
       this.section({
         name: 'harness:identity',
         order: -100,
-        text: 'You are an AI agent powered by AixLab.',
+        text: 'You are an AI agent powered by deepseek-aix.',
       })
     }
     this.section({

@@ -1,5 +1,5 @@
 /**
- * AixLab GUI smoke: drive the product surface at 3090 like a user —
+ * deepseek-aix GUI smoke: drive the product surface at 3090 like a user —
  * ack the welcome notice, start a new session on the aixlab preset,
  * ask for literature, verify the paper-card toolview and the favorites
  * round-trip, and save screenshots for inspection.
@@ -33,7 +33,7 @@ async function main() {
   await page.waitForTimeout(4000)
   await page.screenshot({ path: `${SHOTS}/01-boot.png` })
 
-  // Welcome notice (AixLab copy) — ack it.
+  // Welcome notice (deepseek-aix copy) — ack it.
   const continueButton = page.getByRole('button', { name: '继续' })
   if (await continueButton.count() > 0) {
     console.log('2. ack welcome notice')
@@ -58,12 +58,12 @@ async function main() {
     return btn ? btn.textContent.slice(0, 40) : '(no chip)'
   })
   console.log('   chip label:', chipLabel)
-  if (!/AixLab/.test(chipLabel)) {
+  if (!/deepseek-aix/.test(chipLabel)) {
     const chip = page.getByRole('button', { name: /标准模式|科研模式/ }).first()
     await chip.click()
     await page.waitForTimeout(800)
-    const item = page.getByRole('menuitem', { name: /AixLab 文献助手/ }).first()
-    if (await item.count() > 0) { await item.click(); console.log('   staged AixLab 文献助手') }
+    const item = page.getByRole('menuitem', { name: /deepseek-aix 文献助手/ }).first()
+    if (await item.count() > 0) { await item.click(); console.log('   staged deepseek-aix 文献助手') }
   }
   await page.waitForTimeout(1200)
   await page.screenshot({ path: `${SHOTS}/03-preset.png` })

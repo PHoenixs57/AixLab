@@ -5,6 +5,7 @@ import type { PermissionSelect as PermissionSelectValue } from '@deepseek-ai/dsh
 import { IconChevronDownOutline14, Menu, RiskConfirmation } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { MenuEntry } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { ComposerBarProps } from '../contract/slots.ts'
+import type { ConversationKey } from '../locales.ts'
 import css from './PermissionSelect.module.css'
 
 const FULL_ACCESS = 'danger-full-access'
@@ -46,19 +47,28 @@ function permissionGlyph(value: string): ReactNode | undefined {
 }
 
 /**
- * Display transform: kebab-case machine names render as title-case labels
- * (`workspace-write` → `Workspace Write`); non-kebab host-configured names
- * pass through. Full access intentionally overrides the machine-name
- * transform so both permission surfaces use the product label `Full access`;
- * the warning body remains locale-aware.
+ * Display transform: the three product-known machine values localize through
+ * the active locale; kebab-case host-configured names render as title-case
+ * labels (`workspace-write` → `Workspace Write`) and non-kebab names pass
+ * through. Full access intentionally overrides the machine-name transform so
+ * both permission surfaces use the localized product label; the warning body
+ * remains locale-aware.
  */
 function displayName(name: string): string {
   if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(name)) return name
   return name.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
 }
 
-function optionLabel(option: PermissionSelectValue['options'][number]): string {
-  return option.value === FULL_ACCESS ? 'Full access' : displayName(option.name)
+/** Locale keys for the product-known preset labels, keyed by machine value. */
+const PRESET_LABEL_KEYS: Readonly<Record<string, ConversationKey>> = {
+  'read-only': 'permission.preset.read-only',
+  'workspace-write': 'permission.preset.workspace-write',
+  'danger-full-access': 'permission.preset.danger-full-access',
+}
+
+function optionLabel(option: PermissionSelectValue['options'][number], t: ComposerBarProps['t']): string {
+  const key = PRESET_LABEL_KEYS[option.value]
+  return key === undefined ? displayName(option.name) : t(key)
 }
 
 export interface PermissionSelectProps {
@@ -92,7 +102,7 @@ export function PermissionSelect({ value, locked, command, t }: PermissionSelect
     .filter(o => o.value !== 'custom')
     .map((option) => {
       const icon = permissionGlyph(option.value)
-      return { id: option.value, label: optionLabel(option), ...icon === undefined ? {} : { icon } }
+      return { id: option.value, label: optionLabel(option, t), ...icon === undefined ? {} : { icon } }
     })
 
   const submit = (id: string): void => {
@@ -138,7 +148,7 @@ export function PermissionSelect({ value, locked, command, t }: PermissionSelect
           <button
             type="button"
             className={css.trigger}
-            aria-label={t('input.accessMode', { name: current === undefined ? displayName(currentValue) : optionLabel(current) })}
+            aria-label={t('input.accessMode', { name: current === undefined ? displayName(currentValue) : optionLabel(current, t) })}
             title={current?.description}
             disabled={locked || busy}
             onClick={() => { setOpen(!open) }}
@@ -146,7 +156,7 @@ export function PermissionSelect({ value, locked, command, t }: PermissionSelect
             {permissionGlyph(currentValue) !== undefined && (
               <span className={css.triggerIcon} aria-hidden>{permissionGlyph(currentValue)}</span>
             )}
-            <span className={css.triggerLabel}>{current === undefined ? displayName(currentValue) : optionLabel(current)}</span>
+            <span className={css.triggerLabel}>{current === undefined ? displayName(currentValue) : optionLabel(current, t)}</span>
             {/* Same glyph + open rotation as the sibling ModelSelect trigger. */}
             <span className={clsx(css.chevron, open && css.chevronOpen)} aria-hidden>
               <IconChevronDownOutline14 />

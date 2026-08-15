@@ -31,7 +31,7 @@ import {
   accessEn, accessZh, en, zh,
 } from './locales.ts'
 import {
-  displayPermissionPreset, FULL_ACCESS_PRESET,
+  displayPermissionPreset, displayPresetLabel, FULL_ACCESS_PRESET,
 } from './presentation.ts'
 import {
   PERMISSION_SETTINGS_NS, PermissionPresetSettingsController, refreshPermissionIfLoaded,
@@ -58,7 +58,7 @@ function optionsOf(value: PermissionSelect, t: (key: string) => string): SelectO
     .filter(option => option.value !== 'custom')
     .map(option => ({
       id: option.value,
-      label: displayPermissionPreset(option.value, option.name),
+      label: displayPresetLabel(option.value, displayPermissionPreset(option.value, option.name), t),
       ...(option.description !== undefined ? { detail: option.description } : {}),
       ...(option.value === value.currentValue ? { active: true } : {}),
       ...(option.value === FULL_ACCESS_PRESET
@@ -89,6 +89,9 @@ export function apply(ctx: ClientContext): void {
   ctx.effect(() => {
     const disposers = [
       ctx.locale.register(ACCESS_NS, 'zh', {
+        'preset.read-only': accessZh['preset.read-only'],
+        'preset.workspace-write': accessZh['preset.workspace-write'],
+        'preset.danger-full-access': accessZh['preset.danger-full-access'],
         'confirm.title': accessZh['confirm.title'],
         'confirm.description': accessZh['confirm.description'],
         'confirm.acknowledge': accessZh['confirm.acknowledge'],
@@ -96,6 +99,9 @@ export function apply(ctx: ClientContext): void {
         'confirm.enable': accessZh['confirm.enable'],
       }),
       ctx.locale.register(ACCESS_NS, 'en', {
+        'preset.read-only': accessEn['preset.read-only'],
+        'preset.workspace-write': accessEn['preset.workspace-write'],
+        'preset.danger-full-access': accessEn['preset.danger-full-access'],
         'confirm.title': accessEn['confirm.title'],
         'confirm.description': accessEn['confirm.description'],
         'confirm.acknowledge': accessEn['confirm.acknowledge'],
@@ -104,7 +110,7 @@ export function apply(ctx: ClientContext): void {
       }),
     ]
     return () => { for (const dispose of disposers) dispose() }
-  }, 'ui-permission: Full access confirmation dictionaries')
+  }, 'ui-permission: popup gate dictionaries')
   /* jscpd:ignore-end */
   const t = ctx.locale.bind(ACCESS_NS)
   const sessionFor = (session: ClientSessionContext): SessionFace | undefined =>

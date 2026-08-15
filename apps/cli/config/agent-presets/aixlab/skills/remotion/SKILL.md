@@ -5,13 +5,13 @@ description: Use when the user asks to beautify or animate the chat interface (�
 
 # Remotion motion-graphics skill
 
-Remotion renders React compositions to video/GIF/WebM headlessly. In AixLab it serves two roles for chat-UI beautification: (a) produce **animated assets** (logo intro, typing indicator, background loops, message entrances) that can be dropped into the web app, and (b) act as a **motion spec** — the exact same easing/keyframes get ported to CSS in `packages/client/ui-*`.
+Remotion renders React compositions to video/GIF/WebM headlessly. In deepseek-aix it serves two roles for chat-UI beautification: (a) produce **animated assets** (logo intro, typing indicator, background loops, message entrances) that can be dropped into the web app, and (b) act as a **motion spec** — the exact same easing/keyframes get ported to CSS in `packages/client/ui-*`.
 
 ## Layout
 
 - Template project: `/home/penghao/work-space/claude-work/aixlab/remotion-studio` (independent npm project, already installed).
 - Compositions are registered in `src/Root.tsx` and implemented in `src/compositions/*.tsx`.
-- Brand palette and shared constants live in `src/design.ts` (primary `#4D6BFE` — the AixLab blue; keep new compositions on-palette).
+- Brand palette and shared constants live in `src/design.ts` (primary `#4D6BFE` — the deepseek-aix blue; keep new compositions on-palette).
 
 ## Existing compositions
 
