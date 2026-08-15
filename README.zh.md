@@ -2,6 +2,8 @@
 
 [English](README.md) | 中文
 
+<img src="assets/deepseek-aix.png" width="220" alt="deepseek-aix" />
+
 **deepseek-aix** 是一个面向科学研究的 AI 文献助手：用对话描述研究主题，agent 通过内置的多源文献检索服务（PubMed、arXiv、Semantic Scholar、Crossref 等）帮你搜集相关文献，并把结果整理成可折叠、可收藏的文献卡片。
 
 deepseek-aix 以 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 为底座 fork 而来：保留其完整的 agent 基础设施（会话、工具、子代理、工作流、Web GUI），并在此基础上新增文献能力 —— 多源文献检索服务、带分类文件夹的持久化收藏，以及把检索结果和收藏渲染为卡片的一等公民 Web UI。

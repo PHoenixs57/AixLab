@@ -2,6 +2,8 @@
 
 English | [中文](README.zh.md)
 
+<img src="assets/deepseek-aix.png" width="220" alt="deepseek-aix" />
+
 **deepseek-aix** is an AI research assistant for scholarly literature: describe a research topic in conversation, and the agent collects relevant papers through built-in multi-source search (PubMed, arXiv, Semantic Scholar, Crossref, and more), presenting the results as collapsible, bookmarkable paper cards.
 
 Built as a fork of [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness), deepseek-aix keeps the full agent infrastructure — sessions, tools, subagents, workflows, and the Web GUI — and adds a literature capability on top: a multi-source literature-search service, a durable favorites collection with category folders, and a Web UI that renders search results and bookmarks as first-class cards.
