@@ -15,6 +15,30 @@ Built as a fork of [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-ha
 - **Favorites with folders**: bookmark papers across sessions into a durable, per-user collection, organized into category folders from the sidebar.
 - **Everything is a plugin**: the underlying harness is plugin-based and powered by [Cordis](https://github.com/cordiverse/cordis), whose design is described in [_A Programming Paradigm for Spatiotemporal Composability_](https://github.com/cordiverse/paper).
 
+## Screenshots
+
+<img src="assets/page_01.png" width="760" alt="deepseek-aix screenshot 1" />
+
+<img src="assets/page_02.png" width="760" alt="deepseek-aix screenshot 2" />
+
+## Modes & Features
+
+| Feature | Literature Search mode | Research mode |
+|---|---|---|
+| Conversational research-topic description (Chinese / English) | ✓ | ✓ |
+| Multi-source literature search (PubMed, Europe PMC, bioRxiv/medRxiv, Crossref, OpenAlex, Semantic Scholar, arXiv) | ✓ | — |
+| Automatic deduplication and cross-round merging | ✓ | — |
+| Paper cards (authors, year, venue, abstract, DOI/PMID/arXiv, open-access badge) | ✓ | — |
+| Favorites with category folders (durable across sessions) | ✓ | — |
+| Full-text retrieval (open-access subset) | ✓ | — |
+| Literature-search methodology skill | ✓ | — |
+| Workspace and file management | ✓ | ✓ |
+| Sandboxed code execution (bash / PowerShell) | ✓ | ✓ |
+| Subagents and parallel research | ✓ | ✓ |
+| Goal auto-continuation | ✓ | ✓ |
+| Plan mode and task breakdown | ✓ | ✓ |
+| Durable sessions, replay, and multi-model configuration | ✓ | ✓ |
+
 ## Developer preview
 
 deepseek-aix is currently in _developer preview_ and is iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**

@@ -15,6 +15,30 @@ deepseek-aix 以 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harn
 - **带文件夹的收藏**：跨会话把论文收藏进持久的个人收藏夹，并在侧边栏中按分类文件夹管理。
 - **一切皆插件**：底层框架采用插件化架构，由 [Cordis](https://github.com/cordiverse/cordis) 驱动，其设计参见论文 [_A Programming Paradigm for Spatiotemporal Composability_](https://github.com/cordiverse/paper)。
 
+## 页面展示
+
+<img src="assets/page_01.png" width="760" alt="deepseek-aix 界面截图 1" />
+
+<img src="assets/page_02.png" width="760" alt="deepseek-aix 界面截图 2" />
+
+## 模式与功能
+
+| 功能 | 文献搜索模式 | 科研模式 |
+|---|---|---|
+| 对话式研究主题描述（中英文） | ✓ | ✓ |
+| 多源文献检索（PubMed、Europe PMC、bioRxiv/medRxiv、Crossref、OpenAlex、Semantic Scholar、arXiv） | ✓ | — |
+| 自动去重与多轮结果合并 | ✓ | — |
+| 文献卡片（作者、年份、期刊、摘要、DOI/PMID/arXiv、开放获取标记） | ✓ | — |
+| 收藏与分类文件夹（跨会话持久化） | ✓ | — |
+| 全文获取（开放获取子集） | ✓ | — |
+| 文献检索方法论技能 | ✓ | — |
+| 工作区与文件管理 | ✓ | ✓ |
+| 沙箱代码执行（bash / PowerShell） | ✓ | ✓ |
+| 子代理与并行研究 | ✓ | ✓ |
+| Goal 目标自动续跑 | ✓ | ✓ |
+| 计划模式与任务拆解 | ✓ | ✓ |
+| 持久会话、回放与多模型配置 | ✓ | ✓ |
+
 ## 开发者预览
 
 deepseek-aix 目前处于 _开发者预览_ 阶段，正在快速迭代。**未来将出现破坏兼容性的变更。**
