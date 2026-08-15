@@ -60,8 +60,8 @@ The command starts the Web UI at `http://127.0.0.1:3090` (the port is configurab
 To run from a repository checkout:
 
 ```sh
-git clone https://github.com/deepseek-ai/deepseek-harness.git
-cd deepseek-harness
+git clone https://github.com/PHoenixs57/deepseek-aix.git
+cd deepseek-aix
 pnpm install
 pnpm run build
 pnpm dsh web
@@ -69,7 +69,7 @@ pnpm dsh web
 
 ## Community and support
 
-- Feel free to submit feedback or bug reports through [GitHub Discussions](https://github.com/deepseek-ai/deepseek-harness/discussions).
+- Feel free to submit feedback or bug reports through [GitHub Discussions](https://github.com/PHoenixs57/deepseek-aix/discussions).
 - Join <a href="https://discord.gg/Ycq5dCaS4">DeepSeek Harness Discord community</a>.
 
 ## Contributing

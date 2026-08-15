@@ -60,8 +60,8 @@ npx @deepseek-ai/dsh web --port 3090
 如需从仓库源码运行：
 
 ```sh
-git clone https://github.com/deepseek-ai/deepseek-harness.git
-cd deepseek-harness
+git clone https://github.com/PHoenixs57/deepseek-aix.git
+cd deepseek-aix
 pnpm install
 pnpm run build
 pnpm dsh web
@@ -69,7 +69,7 @@ pnpm dsh web
 
 ## 社区与支持
 
-- 欢迎通过 [GitHub Discussions](https://github.com/deepseek-ai/deepseek-harness/discussions) 提交反馈或 bug 报告。
+- 欢迎通过 [GitHub Discussions](https://github.com/PHoenixs57/deepseek-aix/discussions) 提交反馈或 bug 报告。
 - 欢迎加入 DeepSeek Harness 企微群：扫码添加企微小助手并填写入群问卷，完成后小助手会邀请你入群。
 
 ## 参与贡献
