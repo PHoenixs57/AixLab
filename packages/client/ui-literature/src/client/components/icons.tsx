@@ -20,3 +20,45 @@ export function StarIcon({ filled, size = 14, className }: { filled: boolean; si
     </svg>
   )
 }
+
+/** One plus glyph (filled/outline): the add-to-conversation toggle. */
+export function PlusIcon({ filled, size = 14, className }: { filled: boolean; size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M8 3.2v9.6M3.2 8h9.6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={filled ? 2.4 : 1.4}
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
+/** One minus glyph for the remove-from-conversation toggle. */
+export function MinusIcon({ size = 14, className }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M3.2 8h9.6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}

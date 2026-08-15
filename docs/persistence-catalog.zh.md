@@ -472,6 +472,39 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 
 来源：[`packages/hooks/hook-protocol/src/types.ts:31`](../packages/hooks/hook-protocol/src/types.ts)
 
+### `literature/*`
+
+<a id="literatureattach--log-only"></a>
+
+#### `literature/attach` — log-only
+
+```ts persistence-catalog
+/**
+ * The user attached one paper to this conversation from the literature UI
+ * (the plus on a paper card or a favorites row). Log-only, non-surface:
+ * the details panel and the injected runtime context both fold it.
+ * Whole-value add — attaching the same id again is a service-level
+ * no-op, never a second event.
+ */
+'literature/attach': { paper: AttachedPaper }
+```
+
+来源：[`packages/literature/literature-attachments/src/types.ts:65`](../packages/literature/literature-attachments/src/types.ts)
+
+<a id="literaturedetach--log-only"></a>
+
+#### `literature/detach` — log-only
+
+```ts persistence-catalog
+/**
+ * The user removed one attached paper by stable id. Log-only, non-surface;
+ * a detach for an id that is not attached is a service-level no-op.
+ */
+'literature/detach': { id: string }
+```
+
+来源：[`packages/literature/literature-attachments/src/types.ts:70`](../packages/literature/literature-attachments/src/types.ts)
+
 ### `llm/*`
 
 <a id="llmretry--log-only"></a>

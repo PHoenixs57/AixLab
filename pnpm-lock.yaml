@@ -515,6 +515,9 @@ importers:
       '@deepseek-ai/dsh-jobs-local':
         specifier: workspace:*
         version: link:../packages/jobs/jobs-local
+      '@deepseek-ai/dsh-literature-attachments':
+        specifier: workspace:*
+        version: link:../packages/literature/literature-attachments
       '@deepseek-ai/dsh-llm':
         specifier: workspace:*
         version: link:../packages/llm/llm
@@ -867,6 +870,9 @@ importers:
       '@deepseek-ai/dsh-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
+      '@deepseek-ai/dsh-literature-attachments':
+        specifier: workspace:^
+        version: link:../../literature/literature-attachments
       '@deepseek-ai/dsh-literature-favorites':
         specifier: workspace:^
         version: link:../../literature/literature-favorites
@@ -1408,6 +1414,9 @@ importers:
       '@deepseek-ai/dsh-host-webserver':
         specifier: workspace:^
         version: link:../../host/webserver
+      '@deepseek-ai/dsh-literature-attachments':
+        specifier: workspace:^
+        version: link:../../literature/literature-attachments
       '@deepseek-ai/dsh-literature-favorites':
         specifier: workspace:^
         version: link:../../literature/literature-favorites
@@ -2184,6 +2193,9 @@ importers:
       '@deepseek-ai/dsh-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
+      '@deepseek-ai/dsh-literature-attachments':
+        specifier: workspace:^
+        version: link:../../literature/literature-attachments
       '@deepseek-ai/dsh-literature-favorites':
         specifier: workspace:^
         version: link:../../literature/literature-favorites
@@ -5256,6 +5268,34 @@ importers:
       '@deepseek-ai/dsh-tools':
         specifier: workspace:^
         version: link:../../core/tools
+
+  packages/literature/literature-attachments:
+    dependencies:
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@deepseek-ai/dsh-agent':
+        specifier: workspace:^
+        version: link:../../core/agent
+      '@deepseek-ai/dsh-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@deepseek-ai/dsh-session':
+        specifier: workspace:^
+        version: link:../../core/session
+      '@deepseek-ai/dsh-system-prompt':
+        specifier: workspace:^
+        version: link:../../core/system-prompt
+      '@deepseek-ai/dsh-typert-protocol':
+        specifier: workspace:^
+        version: link:../../typert/protocol
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.0
 
   packages/literature/literature-favorites:
     dependencies:

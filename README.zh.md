@@ -31,6 +31,7 @@ deepseek-aix 以 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harn
 | 文献卡片（作者、年份、期刊、摘要、DOI/PMID/arXiv、开放获取标记） | ✓ | — |
 | 收藏与分类文件夹（跨会话持久化） | ✓ | — |
 | 全文获取（开放获取子集） | ✓ | — |
+| 文献加入对话（加号）与上下文注入精读 | ✓ | — |
 | 文献检索方法论技能 | ✓ | — |
 | 工作区与文件管理 | ✓ | ✓ |
 | 沙箱代码执行（bash / PowerShell） | ✓ | ✓ |

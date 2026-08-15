@@ -5,7 +5,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import type { ToolCallBlock } from '@deepseek-ai/dsh-client-runtime/client'
-import { literatureModel } from '../src/client/paper-model.ts'
+import { favoriteToAttachedPayload, literatureModel, toAttachedPayload, toFavoritePayload } from '../src/client/paper-model.ts'
 
 /** Build a settled tool-result block whose text content is the given JSON. */
 function settled(text: string): ToolCallBlock {
@@ -172,5 +172,67 @@ describe('literatureModel', () => {
 
   it('returns null for an unrelated tool name', () => {
     expect(literatureModel('web_search', settled(JSON.stringify(SEARCH_RESPONSE)))).toBeNull()
+  })
+})
+
+describe('attach and favorite payload builders', () => {
+  it('extracts pmcid from search identifiers into the paper item', () => {
+    const model = literatureModel('mcp__literature__literature_search', settled(JSON.stringify({
+      query: 'q',
+      results: [{ rank: 1, title: 'T', identifiers: { doi: '10.1000/a', pmid: '1', pmcid: 'PMC1', arxiv: '2509.1' }, abstract: null, authors: [], year: null, venue: null, url: null, pdf_url: null, open_access: false, source_evidence: [] }],
+      returned: 1,
+      total_candidates: 1,
+      all_sources_failed: false,
+    })))
+    expect(model?.kind).toBe('search')
+    if (model?.kind !== 'search') throw new Error('expected search model')
+    const paper = model.papers[0]!
+    expect(paper.doi).toBe('10.1000/a')
+    expect(paper.pmid).toBe('1')
+    expect(paper.pmcid).toBe('PMC1')
+    expect(paper.arxiv).toBe('2509.1')
+    expect(paper.id).toBe('10.1000/a')
+  })
+
+  it('falls back to the unknown:<title> id for id-less papers', () => {
+    const paper = {
+      rank: 1, title: 'No ids', abstract: null, authors: [], year: null, venue: null,
+      url: null, pdfUrl: null, openAccess: false, id: null, doi: null, pmid: null, pmcid: null, arxiv: null, sourceCount: 0,
+    }
+    expect(toAttachedPayload(paper).id).toBe('unknown:No ids')
+    expect(toFavoritePayload(paper).id).toBe('unknown:No ids')
+  })
+
+  it('builds the attach payload with identifiers', () => {
+    const paper = {
+      rank: 1, title: 'T', abstract: 'abs', authors: ['A'], year: 2024, venue: 'J', url: 'https://x', pdfUrl: null,
+      openAccess: true, id: '10.1000/a', doi: '10.1000/a', pmid: '1', pmcid: 'PMC1', arxiv: null, sourceCount: 2,
+    }
+    expect(toAttachedPayload(paper)).toEqual({
+      id: '10.1000/a', title: 'T', authors: ['A'], year: 2024, venue: 'J', abstract: 'abs', url: 'https://x',
+      identifiers: { doi: '10.1000/a', pmid: '1', pmcid: 'PMC1' },
+    })
+  })
+
+  it('builds the favorite payload with identifiers, omitting the empty set', () => {
+    const paper = {
+      rank: 1, title: 'T', abstract: null, authors: [], year: null, venue: null, url: null, pdfUrl: null,
+      openAccess: false, id: '10.1000/a', doi: '10.1000/a', pmid: null, pmcid: null, arxiv: null, sourceCount: 1,
+    }
+    expect(toFavoritePayload(paper)).toEqual({
+      id: '10.1000/a', title: 'T', authors: [], year: null, venue: null, abstract: null, url: null,
+      identifiers: { doi: '10.1000/a' },
+    })
+    expect(toFavoritePayload({ ...paper, doi: null, id: null })).not.toHaveProperty('identifiers')
+  })
+
+  it('builds the attach payload from one saved favorite', () => {
+    expect(favoriteToAttachedPayload({
+      id: '10.1000/a', title: 'T', authors: ['A'], year: 2024, venue: 'J', abstract: 'abs', url: 'https://x',
+      identifiers: { doi: '10.1000/a', pmcid: 'PMC1' }, folderId: 'f', addedAt: 1,
+    })).toEqual({
+      id: '10.1000/a', title: 'T', authors: ['A'], year: 2024, venue: 'J', abstract: 'abs', url: 'https://x',
+      identifiers: { doi: '10.1000/a', pmcid: 'PMC1' },
+    })
   })
 })

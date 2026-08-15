@@ -7,7 +7,7 @@
 
 import { z } from 'zod'
 import { defineDomain, domainTable } from '@deepseek-ai/dsh-storage-domain'
-import type { FavoriteFolder, FavoritePaper } from './types.ts'
+import type { FavoriteFolder, FavoritePaper, FavoritePaperIdentifiers } from './types.ts'
 
 const nonNegativeSafeInteger = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER)
 
@@ -18,6 +18,14 @@ export const favoriteFolderSchema = z.object({
   createdAt: nonNegativeSafeInteger,
 }) as unknown as z.ZodType<FavoriteFolder>
 
+/** Runtime schema for the optional stable identifiers of one bookmark entry. */
+export const favoritePaperIdentifiersSchema = z.object({
+  doi: z.string().min(1).max(128).optional(),
+  pmid: z.string().min(1).max(128).optional(),
+  pmcid: z.string().min(1).max(128).optional(),
+  arxiv: z.string().min(1).max(128).optional(),
+}) as unknown as z.ZodType<FavoritePaperIdentifiers>
+
 /** Runtime schema for one bookmark entry. */
 export const favoritePaperSchema = z.object({
   id: z.string().min(1).max(256),
@@ -27,6 +35,9 @@ export const favoritePaperSchema = z.object({
   venue: z.string().max(512).nullable(),
   abstract: z.string().nullable(),
   url: z.string().max(2048).nullable(),
+  // Optional: rows persisted before the identifiers field lack this key; the
+  // service passes it through verbatim (undefined = no identifiers recorded).
+  identifiers: favoritePaperIdentifiersSchema.optional(),
   // Optional: rows persisted before the folder format lack this key; the
   // service normalizes `folderId ?? null` on read and writes the full shape.
   folderId: z.string().max(128).nullable().optional(),

@@ -8,6 +8,7 @@
  */
 
 import type { ToolCallBlock, ToolResultNode } from '@deepseek-ai/dsh-client-runtime/client'
+import type { FavoritePaper } from '@deepseek-ai/dsh-literature-favorites/types'
 
 /** One fused paper from `literature_search`. */
 export interface PaperItem {
@@ -24,6 +25,7 @@ export interface PaperItem {
   id: string | null
   doi: string | null
   pmid: string | null
+  pmcid: string | null
   arxiv: string | null
   /** Number of agreeing sources in source_evidence. */
   sourceCount: number
@@ -135,6 +137,7 @@ function toPaper(raw: unknown, index: number): PaperItem | null {
   const identifiers = asRecord(record.identifiers)
   const doi = asString(identifiers.doi)
   const pmid = asString(identifiers.pmid)
+  const pmcid = asString(identifiers.pmcid)
   const arxiv = asString(identifiers.arxiv)
   const evidence = Array.isArray(record.source_evidence) ? record.source_evidence.length : 0
   return {
@@ -150,8 +153,36 @@ function toPaper(raw: unknown, index: number): PaperItem | null {
     id: doi ?? pmid ?? arxiv,
     doi,
     pmid,
+    pmcid,
     arxiv,
     sourceCount: evidence,
+  }
+}
+
+/**
+ * Build the attach-ready payload from one saved favorite.
+ * @param paper - the saved favorite to convert.
+ * @returns the attach wire payload.
+ */
+export function favoriteToAttachedPayload(paper: FavoritePaper): {
+  id: string
+  title: string
+  authors: string[]
+  year: number | null
+  venue: string | null
+  abstract: string | null
+  url: string | null
+  identifiers: { doi?: string; pmid?: string; pmcid?: string; arxiv?: string }
+} {
+  return {
+    id: paper.id,
+    title: paper.title,
+    authors: paper.authors,
+    year: paper.year,
+    venue: paper.venue,
+    abstract: paper.abstract,
+    url: paper.url,
+    identifiers: { ...paper.identifiers },
   }
 }
 
@@ -241,7 +272,20 @@ export function literatureModel(toolName: string, block: ToolCallBlock): Literat
   return null
 }
 
-/** Build the favorite-ready payload from one paper item. */
+/**
+ * Preferred stable id with the id-less fallback shared by favorites and attachments.
+ * @param paper - the paper item to identify.
+ * @returns the stable id, or the `unknown:<title>` fallback.
+ */
+export function paperStableId(paper: PaperItem): string {
+  return paper.id ?? `unknown:${paper.title}`
+}
+
+/**
+ * Build the favorite-ready payload from one paper item.
+ * @param paper - the paper item to convert.
+ * @returns the bookmark payload (identifiers omitted when empty).
+ */
 export function toFavoritePayload(paper: PaperItem): {
   id: string
   title: string
@@ -250,14 +294,53 @@ export function toFavoritePayload(paper: PaperItem): {
   venue: string | null
   abstract: string | null
   url: string | null
+  identifiers?: { doi?: string; pmid?: string; pmcid?: string; arxiv?: string }
 } {
+  const identifiers: { doi?: string; pmid?: string; pmcid?: string; arxiv?: string } = {}
+  if (paper.doi !== null) identifiers.doi = paper.doi
+  if (paper.pmid !== null) identifiers.pmid = paper.pmid
+  if (paper.pmcid !== null) identifiers.pmcid = paper.pmcid
+  if (paper.arxiv !== null) identifiers.arxiv = paper.arxiv
   return {
-    id: paper.id ?? `unknown:${paper.title}`,
+    id: paperStableId(paper),
     title: paper.title,
     authors: paper.authors,
     year: paper.year,
     venue: paper.venue,
     abstract: paper.abstract,
     url: paper.url,
+    ...Object.keys(identifiers).length > 0 ? { identifiers } : {},
+  }
+}
+
+/**
+ * Build the attach-ready payload from one paper item (nulls normalize to null, not absent).
+ * @param paper - the paper item to convert.
+ * @returns the attach wire payload.
+ */
+export function toAttachedPayload(paper: PaperItem): {
+  id: string
+  title: string
+  authors: string[]
+  year: number | null
+  venue: string | null
+  abstract: string | null
+  url: string | null
+  identifiers: { doi?: string; pmid?: string; pmcid?: string; arxiv?: string }
+} {
+  const identifiers: { doi?: string; pmid?: string; pmcid?: string; arxiv?: string } = {}
+  if (paper.doi !== null) identifiers.doi = paper.doi
+  if (paper.pmid !== null) identifiers.pmid = paper.pmid
+  if (paper.pmcid !== null) identifiers.pmcid = paper.pmcid
+  if (paper.arxiv !== null) identifiers.arxiv = paper.arxiv
+  return {
+    id: paperStableId(paper),
+    title: paper.title,
+    authors: paper.authors,
+    year: paper.year,
+    venue: paper.venue,
+    abstract: paper.abstract,
+    url: paper.url,
+    identifiers,
   }
 }

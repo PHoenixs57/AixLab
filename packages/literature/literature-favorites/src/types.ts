@@ -21,6 +21,21 @@ export interface FavoriteFolder {
 }
 
 /**
+ * Stable identifiers of one saved paper. Any subset may be present; the
+ * field is optional because rows persisted before it existed lack the key.
+ */
+export interface FavoritePaperIdentifiers {
+  /** Digital Object Identifier, e.g. `10.1000/example.1`. */
+  doi?: string
+  /** PubMed identifier, digits only. */
+  pmid?: string
+  /** PubMed Central identifier, e.g. `PMC1234567`. */
+  pmcid?: string
+  /** arXiv identifier, e.g. `2001.01234`. */
+  arxiv?: string
+}
+
+/**
  * One saved paper. `id` is the deduplication key: the DOI when present
  * (preferred), else the PMID, else the arXiv id — written by the caller and
  * never synthesized by the service.
@@ -38,6 +53,8 @@ export interface FavoritePaper {
   abstract: string | null
   /** Canonical landing page, or null. */
   url: string | null
+  /** Stable identifiers beyond `id`; absent on rows persisted before the field existed. */
+  identifiers?: FavoritePaperIdentifiers
   /** Folder this paper is filed under; null = uncategorized. */
   folderId: string | null
   /** Unix epoch ms when the bookmark was created. */

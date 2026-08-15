@@ -59,7 +59,10 @@ export class FavoritesStore {
   private remote: FavoritesRemote | null = null
   private operationTail: Promise<void> = Promise.resolve()
 
-  /** Bind the generated Remote namespace (called once from plugin apply). */
+  /**
+   * Bind the generated Remote namespace (called once from plugin apply).
+   * @param remote - the mounted favorites Remote namespace.
+   */
   attach(remote: FavoritesRemote): void {
     this.remote = remote
   }
@@ -119,7 +122,11 @@ export class FavoritesStore {
     void this.ensure()
   }
 
-  /** Whether one paper id is currently bookmarked. */
+  /**
+   * Whether one paper id is currently bookmarked.
+   * @param id - the stable identifier to look up.
+   * @returns true when the collection holds the id.
+   */
   isSaved(id: string | null): boolean {
     if (id === null || this.view.status !== 'ready') return false
     return this.view.papers.some(paper => paper.id === id)
@@ -141,7 +148,10 @@ export class FavoritesStore {
     })
   }
 
-  /** Remove one bookmarked paper by id (star un-toggle / panel delete button). */
+  /**
+   * Remove one bookmarked paper by id (star un-toggle / panel delete button).
+   * @param id - the stable identifier of the paper to unbookmark.
+   */
   remove(id: string): Promise<void> {
     return this.serialize(async () => {
       await this.ensure()
@@ -152,7 +162,11 @@ export class FavoritesStore {
     })
   }
 
-  /** Create one category folder; resolves with the committed folder. */
+  /**
+   * Create one category folder; resolves with the committed folder.
+   * @param name - the folder display name.
+   * @returns the committed folder.
+   */
   createFolder(name: string): Promise<FavoriteFolder> {
     return this.serialize(async () => {
       await this.ensure()
@@ -164,7 +178,11 @@ export class FavoritesStore {
     })
   }
 
-  /** Rename one folder by id. */
+  /**
+   * Rename one folder by id.
+   * @param id - the folder id to rename.
+   * @param name - the new display name.
+   */
   renameFolder(id: string, name: string): Promise<void> {
     return this.serialize(async () => {
       await this.ensure()
@@ -179,7 +197,10 @@ export class FavoritesStore {
     })
   }
 
-  /** Delete one folder by id; its papers move back to uncategorized. */
+  /**
+   * Delete one folder by id; its papers move back to uncategorized.
+   * @param id - the folder id to delete.
+   */
   deleteFolder(id: string): Promise<void> {
     return this.serialize(async () => {
       await this.ensure()
@@ -194,7 +215,11 @@ export class FavoritesStore {
     })
   }
 
-  /** File one paper under a folder (null = uncategorized). */
+  /**
+   * File one paper under a folder (null = uncategorized).
+   * @param id - the stable identifier of the paper to move.
+   * @param folderId - the target folder id, or null for uncategorized.
+   */
   move(id: string, folderId: string | null): Promise<void> {
     return this.serialize(async () => {
       await this.ensure()

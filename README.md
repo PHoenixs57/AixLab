@@ -31,6 +31,7 @@ Built as a fork of [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-ha
 | Paper cards (authors, year, venue, abstract, DOI/PMID/arXiv, open-access badge) | ✓ | — |
 | Favorites with category folders (durable across sessions) | ✓ | — |
 | Full-text retrieval (open-access subset) | ✓ | — |
+| Add papers to the conversation (plus) and detailed reading with injected context | ✓ | — |
 | Literature-search methodology skill | ✓ | — |
 | Workspace and file management | ✓ | ✓ |
 | Sandboxed code execution (bash / PowerShell) | ✓ | ✓ |

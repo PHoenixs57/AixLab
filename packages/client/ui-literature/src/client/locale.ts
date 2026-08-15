@@ -7,6 +7,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
   }
 }
 
+/** Chinese literature UI copy. */
 export const zh = {
   searchTitle: '文献检索',
   searchSummary: '{n} 篇文献 · “{query}”',
@@ -36,6 +37,13 @@ export const zh = {
   addFavorite: '收藏',
   removeFavorite: '取消收藏',
   saved: '已收藏',
+  attachToConversation: '加入对话',
+  detachFromConversation: '移出对话',
+  attached: '已加入对话',
+  attachedContextTitle: '已加入对话',
+  attachedContextInjected: '已注入上下文',
+  attachedCount: '{n} 篇',
+  attachDisabled: '请先打开一个会话',
   chooseFolder: '收藏到分类',
   moveToFolder: '移动到分类',
   uncategorized: '未分类',
@@ -53,6 +61,7 @@ export const zh = {
   folderEmpty: '该分类下还没有文献',
 }
 
+/** English literature UI copy. */
 export const en = {
   searchTitle: 'Literature search',
   searchSummary: '{n} papers · “{query}”',
@@ -82,6 +91,13 @@ export const en = {
   addFavorite: 'Bookmark',
   removeFavorite: 'Remove bookmark',
   saved: 'Saved',
+  attachToConversation: 'Add to conversation',
+  detachFromConversation: 'Remove from conversation',
+  attached: 'Added to conversation',
+  attachedContextTitle: 'Added to conversation',
+  attachedContextInjected: 'Injected into context',
+  attachedCount: '{n} papers',
+  attachDisabled: 'Open a conversation first',
   chooseFolder: 'Save to folder',
   moveToFolder: 'Move to folder',
   uncategorized: 'Uncategorized',

@@ -12,6 +12,8 @@
 
 import { createRequire } from 'node:module'
 import { networkInterfaces } from 'node:os'
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
@@ -27,6 +29,9 @@ export const name = 'web-app'
 
 /** This dsh installation's root, from either this package's source or built entry. */
 const SOURCE_ROOT = fileURLToPath(new URL('../../../..', import.meta.url))
+
+/** The aix-girl mascot asset, served from the repository asset root. */
+const AIX_GIRL_ASSET = join(SOURCE_ROOT, 'assets', 'aix-girl.png')
 
 /** Runtime service that releases Web rows after bind-dependent values resolve. */
 const WEB_RUNTIME_SERVICE = 'webRuntime'
@@ -137,6 +142,23 @@ export function apply(ctx: Context, config: Config): void {
   // Release dependent rows only after bind-dependent trust has been sampled once.
   ctx.provide(WEB_RUNTIME_SERVICE, runtime)
   ctx.plugin(FrontendStatic, { distIndex: internals.resolveDistIndex() })
+  // The frontend details panel points at /assets/aix-girl.png; serve the
+  // repository mascot asset directly so the built frontend does not need a
+  // duplicate copy under dist.
+  ctx.webServer.register({
+    kind: 'exact',
+    path: '/assets/aix-girl.png',
+    handler: async (_req, res) => {
+      try {
+        const body = await readFile(AIX_GIRL_ASSET)
+        res.writeHead(200, { 'content-type': 'image/png' })
+        res.end(body)
+      } catch {
+        res.writeHead(404)
+        res.end()
+      }
+    },
+  })
   if (config.surfaceContext) {
     ctx.inject(['systemPrompt'], (promptCtx) => {
       addHarnessSourceSection(promptCtx, SOURCE_ROOT)

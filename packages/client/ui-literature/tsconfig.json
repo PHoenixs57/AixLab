@@ -15,6 +15,9 @@
       "path": "../../../vendor/cordis"
     },
     {
+      "path": "../../literature/literature-attachments"
+    },
+    {
       "path": "../../literature/literature-favorites"
     },
     {

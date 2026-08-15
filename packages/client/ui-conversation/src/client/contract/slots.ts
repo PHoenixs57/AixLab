@@ -93,6 +93,13 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
      */
     'conversation.chat.commandview': { kind: 'keyed'; scope: 'session'; owner: CommandRowOwnerProps }
     /**
+     * Additive tail rendered below one user message bubble. Entries read the
+     * addressed message's durable identity from the owner share and their own
+     * session state, so a provider can annotate a message without taking over
+     * the user bubble.
+     */
+    'conversation.chat.user-tail': { kind: 'list'; scope: 'session'; owner: UserTailOwnerProps }
+    /**
      * The completed Turn Node's extension chain, rendered before that Node's
      * IconActions. Entries derive a match from the engine-owned Turn and
      * closing seq before mounting, so presentation components never mount
@@ -346,6 +353,14 @@ export interface ChatNodeTurnDataInjected {
   hooks: {
     turnData: SlotHookFactory<'conversation.chat.node', UseChatNodeTurnData>
   }
+}
+
+/** Owner share of the tail rendered below one user message: its durable identity. */
+export interface UserTailOwnerProps {
+  /** Source event seq of the user message. */
+  seq: number
+  /** Engine-owned stable node key. */
+  key: string
 }
 
 /** Stable owner currency delivered to one keyed Chat business renderer. */

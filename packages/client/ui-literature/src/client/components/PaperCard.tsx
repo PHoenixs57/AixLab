@@ -1,7 +1,8 @@
 /**
- * Shared paper card: header (star + title), meta line, identifier badges,
- * foldable abstract. Used by the right-side literature panel; the star
- * toggle rides the global favorites store.
+ * Shared paper card: header (star + add-to-conversation plus + title), meta
+ * line, identifier badges, foldable abstract. Used by the right-side
+ * literature panel; the star toggle rides the global favorites store, while
+ * the plus toggle's state and callbacks come from the panel's session.
  */
 
 import { useCallback, useSyncExternalStore, useState } from 'react'
@@ -12,7 +13,7 @@ import { favoritesStore } from '../favorites/store.ts'
 import { toFavoritePayload } from '../paper-model.ts'
 import type { PaperItem } from '../paper-model.ts'
 import { FolderPicker } from './FolderPicker.tsx'
-import { StarIcon } from './icons.tsx'
+import { MinusIcon, PlusIcon, StarIcon } from './icons.tsx'
 import css from './PaperCard.module.css'
 
 /** Meta line: authors · year · venue, with graceful absences. */
@@ -30,11 +31,21 @@ function metaLine(paper: PaperItem): string {
  * One paper card.
  * @param paper - the fused paper item.
  * @param t - the literature locale seat.
+ * @param attached - whether this paper is attached to the current session.
+ * @param onAttach - attach this paper to the current session.
+ * @param onDetach - detach this paper from the current session.
  */
-export function PaperCard({ paper, t }: { paper: PaperItem; t: PropsLocale<'literature'>['t'] }) {
+export function PaperCard({ paper, t, attached, onAttach, onDetach }: {
+  paper: PaperItem
+  t: PropsLocale<'literature'>['t']
+  attached: boolean
+  onAttach: () => Promise<void>
+  onDetach: () => Promise<void>
+}) {
   const view = useSyncExternalStore(favoritesStore.subscribe, favoritesStore.getSnapshot)
   const [abstractOpen, setAbstractOpen] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [attachBusy, setAttachBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pickerOpen, setPickerOpen] = useState(false)
   const saved = view.status === 'ready' && view.papers.some(savedPaper => savedPaper.id === paper.id)
@@ -65,6 +76,15 @@ export function PaperCard({ paper, t }: { paper: PaperItem; t: PropsLocale<'lite
 
   const toggleAbstract = useCallback(() => { setAbstractOpen(open => !open) }, [])
 
+  const onAttachToggle = useCallback(() => {
+    if (attachBusy) return
+    setAttachBusy(true)
+    setError(null)
+    ;(attached ? onDetach() : onAttach())
+      .catch((reason: unknown) => { setError(String(reason)) })
+      .finally(() => { setAttachBusy(false) })
+  }, [attachBusy, attached, onAttach, onDetach])
+
   const hasAbstract = paper.abstract !== null && paper.abstract !== ''
   return (
     <article className={css.card}>
@@ -78,6 +98,16 @@ export function PaperCard({ paper, t }: { paper: PaperItem; t: PropsLocale<'lite
           onClick={onStar}
         >
           <StarIcon filled={saved} size={14} />
+        </button>
+        <button
+          type="button"
+          className={clsx(css.attach, attached && css.attachActive)}
+          disabled={attachBusy}
+          aria-label={attached ? t('detachFromConversation') : t('attachToConversation')}
+          title={attached ? t('detachFromConversation') : t('attachToConversation')}
+          onClick={onAttachToggle}
+        >
+          {attached ? <MinusIcon size={14} /> : <PlusIcon filled={false} size={14} />}
         </button>
         <div className={css.cardTitleBlock}>
           <h4 className={css.cardTitle}>

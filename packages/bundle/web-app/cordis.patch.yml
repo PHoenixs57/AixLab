@@ -71,6 +71,11 @@
     - id: literature-favorites
       name: '@deepseek-ai/dsh-literature-favorites'
 
+    # Literature attachments: per-session papers the user adds from the
+    # literature UI (session events + the injected runtime context).
+    - id: literature-attachments
+      name: '@deepseek-ai/dsh-literature-attachments'
+
     # Literature search: the bundled multi-source MCP server, mounted at the
     # host plane so every session sees the mcp__literature__* tools (the
     # aixlab preset supplies the literature persona and skills).

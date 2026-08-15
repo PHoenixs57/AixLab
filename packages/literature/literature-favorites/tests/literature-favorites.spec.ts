@@ -317,4 +317,71 @@ describe('literature-favorites service', () => {
     expect(listed.value.papers[0]!.folderId).toBeNull()
     expect(listed.value.papers[0]!.title).toBe(PAPER.title)
   })
+
+  it('stores and returns the optional stable identifiers, trimming blanks', async () => {
+    const harness = await setupHarness()
+    const result = await harness.ctx.literatureFavorites.add({
+      ...PAPER,
+      identifiers: { doi: ' 10.1000/example.1 ', pmcid: ' PMC1 ', pmid: '', arxiv: '  ' },
+    })
+    expect(result.ok).toBe(true)
+    if (!result.ok) throw new Error('add failed')
+    expect(result.value.identifiers).toEqual({ doi: '10.1000/example.1', pmcid: 'PMC1' })
+
+    const listed = await harness.ctx.literatureFavorites.list()
+    expect(listed.ok).toBe(true)
+    if (!listed.ok) throw new Error('list failed')
+    expect(listed.value.papers[0]!.identifiers).toEqual({ doi: '10.1000/example.1', pmcid: 'PMC1' })
+  })
+
+  it('omits identifiers when the request carries none', async () => {
+    const harness = await setupHarness()
+    const { identifiers: _identifiers, ...withoutIdentifiers } = { ...PAPER, identifiers: undefined }
+    const result = await harness.ctx.literatureFavorites.add(withoutIdentifiers)
+    expect(result.ok).toBe(true)
+    if (!result.ok) throw new Error('add failed')
+    expect('identifiers' in result.value).toBe(false)
+  })
+
+  it('normalizes a pre-identifiers persisted row on read', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'dsh-literature-favorites-migrate-ids-'))
+    roots.push(root)
+    const { writeFile } = await import('node:fs/promises')
+    await writeFile(join(root, 'literature_favorites.json'), JSON.stringify({
+      unit: { name: 'literature_favorites', version: 0 },
+      global: null,
+      tables: {
+        papers: {
+          global: {
+            papers: [{
+              id: PAPER.id,
+              title: PAPER.title,
+              authors: PAPER.authors,
+              year: PAPER.year,
+              venue: PAPER.venue,
+              abstract: PAPER.abstract,
+              url: PAPER.url,
+              folderId: null,
+              addedAt: 123,
+            }],
+          },
+        },
+      },
+    }, null, 2) + '\n')
+
+    const ctx = new Context()
+    contexts.push(ctx)
+    await ctx.plugin(Storage)
+    await ctx.plugin(StorageJson, { root })
+    await ctx.plugin(StorageDomain, { backend: 'json' })
+    await ctx.plugin(SystemPrompt)
+    await ctx.plugin(ToolRuntime)
+    await ctx.plugin(LiteratureFavoritesService)
+
+    const listed = await ctx.literatureFavorites.list()
+    expect(listed.ok).toBe(true)
+    if (!listed.ok) throw new Error('list failed')
+    expect(listed.value.papers).toHaveLength(1)
+    expect(listed.value.papers[0]!.identifiers).toBeUndefined()
+  })
 })
