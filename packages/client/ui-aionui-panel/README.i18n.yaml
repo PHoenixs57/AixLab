@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-aionui-panel/README.md
-README.md: 88079f06fa9826f03b5acbadc8c217a1b1e42a03
-README.zh.md: bf8f722e735ba39040ddf80e3f3491b3f06d7651
+README.md: 312ead45890b30e2be19bb281bb4c8c34544e2c9
+README.zh.md: 2b0f68b76baac55aaa344ed971946eff24bc2a3a

@@ -18,13 +18,15 @@ import type {} from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 // Type-only: pulls the ui-conversation SlotMap merge (the input dock entry).
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
+// Type-only: pulls the input-trigger Context merge (ctx.inputTriggers).
+import type {} from '@deepseek-ai/dsh-client-ui-input-trigger/client'
 import { PanelApi, subscribePanelEvents } from './api.ts'
 import { PanelLayoutController } from './layout.ts'
 import { createPanelStores, layoutSetRoot } from './store.ts'
 import { mountPanels } from './mount.tsx'
 import { NS, dictionaries, setLanguage, type AionUiPanelKey } from './locales.ts'
 import { DragFileInlay, type DragFileInjected } from './drag/DragFileInlay.tsx'
-import { insertPathIntoDraft } from './drag/file-drag.ts'
+import { createFileSource, fileReference } from './drag/file-source.ts'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
@@ -33,12 +35,29 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
   }
 }
 
-/** Required services: sessions for the project root, locale for the copy. */
-export const inject = ['sessions', 'locale']
+/** Required services: sessions for the project root, locale for the copy, inputTriggers for the file-chip codec. */
+export const inject = ['sessions', 'locale', 'inputTriggers']
 
 /** Apply the browser half. */
 export function apply(ctx: ClientContext): void {
   ctx.effect(() => ctx.locale.register(NS, dictionaries), 'dsh-aionui-panel: dictionaries')
+
+  // Shared fs client: the '@' file source (mentions) and the panel stores both
+  // read through it.
+  const api = new PanelApi()
+
+  // The '@' file source: typing '@' lists workspace files to mention; its
+  // codec (path identity) also owns submit-time serialization for the
+  // drag-a-file chip, so both mention and drop expand back to the relative
+  // path instead of raw text.
+  const rootOf = (sessionId: SessionId): string => {
+    const cwd = ctx.sessions.list.getSnapshot().byId[sessionId]?.cwd
+    return typeof cwd === 'string' && cwd !== '' ? cwd : ''
+  }
+  ctx.effect(
+    () => ctx.inputTriggers.registerSource(createFileSource({ api, rootOf })),
+    'dsh-aionui-panel: file source',
+  )
 
   // The composer drop target for explorer file drags: mounted in the
   // official `conversation.input.dock` band (declared by the shipped
@@ -55,23 +74,26 @@ export function apply(ctx: ClientContext): void {
         order: 90,
         locale: NS,
         inject: (sessionId: SessionId | undefined): DragFileInjected => ({
-          insertPath: (path: string): boolean => {
+          insertFile: (path: string): boolean => {
             if (sessionId === undefined) return false
             const actx = sessions.scope(sessionId)
             if (actx === undefined) return false
             const input = conversation.input
             if (input === undefined) return false
             const shell = input.for(actx)
-            const draft = shell.state.getSnapshot().draft
-            shell.setDraft(insertPathIntoDraft(draft, path))
-            return true
+            const snapshot = shell.state.getSnapshot()
+            const at = snapshot.draft.length
+            return shell.insertReference(fileReference(path), {
+              start: at,
+              end: at,
+              draftRev: snapshot.draftRev,
+            })
           },
         }),
       }, DragFileInlay))
   })
 
   ctx.effect(() => {
-    const api = new PanelApi()
     const stores = createPanelStores(api)
     const layout = new PanelLayoutController(stores.layout)
     const disposers: Array<() => void> = []

@@ -1,0 +1,130 @@
+/* AixLab Home skin — the assets/home.png hero art as the main backdrop.
+   Everything is scoped under body[data-dsh-home], set by apply(), so the
+   skin stays hot-pluggable and retracts cleanly. The app frame/root become
+   translucent and let the art show through; the semantic aliases below give
+   the whole UI a lavender cloud-glass palette in light mode and a deep
+   night-lab palette in dark mode. */
+
+body[data-dsh-home] {
+  color: #242537;
+  background-color: #f5f6fc;
+}
+
+body[data-dsh-home][data-ds-dark-theme] {
+  color: #e8e9f7;
+  background-color: #12131f;
+}
+
+body[data-dsh-home] [id='root'] {
+  background: transparent;
+}
+
+/* --- Light: morning cloud glass ------------------------------------------- */
+body[data-dsh-home] {
+  --dsw-alias-bg-base: rgba(247, 248, 253, 0.58);
+  --dsw-alias-bg-layer-1: rgba(250, 250, 254, 0.62);
+  --dsw-alias-bg-layer-2: rgba(244, 245, 252, 0.72);
+  --dsw-alias-bg-layer-3: rgba(236, 238, 250, 0.82);
+  --dsw-alias-bg-module-platform: rgba(240, 242, 251, 0.74);
+  --dsw-alias-bg-multi-select: rgba(229, 233, 249, 0.9);
+  --dsw-alias-bg-overlay: rgba(246, 247, 253, 0.94);
+  --dsw-alias-bg-mask-1: rgba(36, 37, 55, 0.32);
+  --dsw-alias-bg-mask-2: rgba(36, 37, 55, 0.16);
+  --dsw-alias-bg-mask-3: rgba(36, 37, 55, 0.42);
+  --dsw-alias-bg-skeleton: rgba(91, 108, 196, 0.08);
+  --dsw-alias-border-l1: rgba(76, 82, 145, 0.14);
+  --dsw-alias-border-l2: rgba(76, 82, 145, 0.20);
+  --dsw-alias-border-l2-darkmode-thin: rgba(76, 82, 145, 0.22);
+  --dsw-alias-border-l3: rgba(76, 82, 145, 0.30);
+  --dsw-alias-border-l4: rgba(76, 82, 145, 0.42);
+  --dsw-alias-label-primary: #242537;
+  --dsw-alias-label-secondary: #4e5068;
+  --dsw-alias-label-tertiary: #777a95;
+  --dsw-alias-label-caption: #9a9cb4;
+  --dsw-alias-label-dimmed: #a8aac0;
+  --dsw-alias-label-primary-dimmed: #4e5068;
+  --dsw-alias-label-primary-foreground: #ffffff;
+  --dsw-alias-label-primary-inverted: #ffffff;
+  --dsw-alias-brand-primary: #5b6cc4;
+  --dsw-alias-brand-primary-invert: #ffffff;
+  --dsw-alias-brand-text: #3f4d9e;
+  --dsw-alias-button-primary-fill: #5b6cc4;
+  --dsw-alias-button-primary-hover: #4d5cb0;
+  --dsw-alias-button-primary-dimmed: #e7e9fb;
+  --dsw-alias-button-info-fill: #5b6cc4;
+  --dsw-alias-button-info-hover: #4d5cb0;
+  --dsw-alias-button-floating-fill: rgba(255, 255, 255, 0.86);
+  --dsw-alias-button-floating-hover: #edf0fb;
+  --dsw-alias-button-ghost-active-fill: #e0e4f8;
+  --dsw-alias-button-ghost-active-hover: #d3d9f4;
+  --dsw-alias-button-ghost-active-border: #b9c2ec;
+  --dsw-alias-interactive-bg-hover: rgba(91, 108, 196, 0.08);
+  --dsw-alias-interactive-bg-hover-accent: rgba(91, 108, 196, 0.16);
+  --dsw-alias-interactive-bg-hover-solid: #eceffb;
+  --dsw-alias-interactive-bg-active: rgba(91, 108, 196, 0.14);
+  --dsw-alias-interactive-bg-hover-danger: rgba(192, 0, 0, 0.06);
+  --dsw-alias-markdown-code-block: rgba(244, 245, 252, 0.78);
+  --dsw-alias-markdown-code-block-banner: rgba(244, 245, 252, 0.82);
+  --dsw-alias-markdown-inline-code: rgba(233, 236, 249, 0.78);
+  --dsw-alias-markdown-citation: rgba(240, 242, 251, 0.72);
+  --dsw-specific-sidebar-fill: rgba(244, 245, 252, 0.62);
+  --dsw-specific-input-major: rgba(255, 255, 255, 0.82);
+  --dsw-specific-bubble: rgba(247, 248, 253, 0.88);
+  --dsw-specific-menu: rgba(255, 255, 255, 0.94);
+  --dsw-specific-selector: rgba(235, 238, 250, 0.9);
+}
+
+/* --- Dark: night lab ------------------------------------------------------- */
+body[data-dsh-home][data-ds-dark-theme] {
+  --dsw-alias-bg-base: rgba(18, 19, 31, 0.72);
+  --dsw-alias-bg-layer-1: rgba(23, 24, 39, 0.76);
+  --dsw-alias-bg-layer-2: rgba(28, 29, 47, 0.82);
+  --dsw-alias-bg-layer-3: rgba(34, 36, 56, 0.88);
+  --dsw-alias-bg-module-platform: rgba(27, 28, 45, 0.84);
+  --dsw-alias-bg-multi-select: rgba(39, 41, 64, 0.92);
+  --dsw-alias-bg-overlay: rgba(20, 21, 35, 0.94);
+  --dsw-alias-bg-mask-1: rgba(4, 5, 14, 0.42);
+  --dsw-alias-bg-mask-2: rgba(4, 5, 14, 0.24);
+  --dsw-alias-bg-mask-3: rgba(4, 5, 14, 0.52);
+  --dsw-alias-bg-skeleton: rgba(170, 180, 242, 0.08);
+  --dsw-alias-border-l1: rgba(186, 193, 236, 0.14);
+  --dsw-alias-border-l2: rgba(186, 193, 236, 0.20);
+  --dsw-alias-border-l2-darkmode-thin: rgba(186, 193, 236, 0.22);
+  --dsw-alias-border-l3: rgba(186, 193, 236, 0.30);
+  --dsw-alias-border-l4: rgba(186, 193, 236, 0.42);
+  --dsw-alias-label-primary: #e8e9f7;
+  --dsw-alias-label-secondary: #b8bad2;
+  --dsw-alias-label-tertiary: #9295b5;
+  --dsw-alias-label-caption: #777a9b;
+  --dsw-alias-label-dimmed: #66698a;
+  --dsw-alias-label-primary-dimmed: #b8bad2;
+  --dsw-alias-label-primary-foreground: #ffffff;
+  --dsw-alias-label-primary-inverted: #15162a;
+  --dsw-alias-brand-primary: #aab4f2;
+  --dsw-alias-brand-primary-invert: #15162a;
+  --dsw-alias-brand-text: #c3cbf7;
+  --dsw-alias-button-primary-fill: #6979d0;
+  --dsw-alias-button-primary-hover: #7d8cdf;
+  --dsw-alias-button-primary-dimmed: #25284a;
+  --dsw-alias-button-info-fill: #6979d0;
+  --dsw-alias-button-info-hover: #7d8cdf;
+  --dsw-alias-button-floating-fill: rgba(31, 33, 53, 0.92);
+  --dsw-alias-button-floating-hover: #2b2d4a;
+  --dsw-alias-button-ghost-active-fill: #2a2d4d;
+  --dsw-alias-button-ghost-active-hover: #343858;
+  --dsw-alias-button-ghost-active-border: #4a4f7a;
+  --dsw-alias-interactive-bg-hover: rgba(170, 180, 242, 0.10);
+  --dsw-alias-interactive-bg-hover-accent: rgba(170, 180, 242, 0.18);
+  --dsw-alias-interactive-bg-hover-solid: #2a2d4d;
+  --dsw-alias-interactive-bg-active: rgba(170, 180, 242, 0.16);
+  --dsw-alias-interactive-bg-hover-danger: rgba(224, 92, 92, 0.12);
+  --dsw-alias-markdown-code-block: rgba(24, 26, 42, 0.86);
+  --dsw-alias-markdown-code-block-banner: rgba(28, 30, 48, 0.9);
+  --dsw-alias-markdown-inline-code: rgba(37, 40, 62, 0.88);
+  --dsw-alias-markdown-citation: rgba(28, 30, 48, 0.82);
+  --dsw-specific-sidebar-fill: rgba(20, 21, 35, 0.72);
+  --dsw-specific-input-major: rgba(27, 28, 45, 0.88);
+  --dsw-specific-bubble: rgba(30, 32, 51, 0.9);
+  --dsw-specific-menu: rgba(24, 25, 41, 0.94);
+  --dsw-specific-selector: rgba(37, 39, 62, 0.92);
+}

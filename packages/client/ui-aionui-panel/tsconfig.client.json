@@ -26,6 +26,7 @@
     "src/client/components/a11y.ts",
     "src/client/drag/DragFileInlay.tsx",
     "src/client/drag/file-drag.ts",
+    "src/client/drag/file-source.ts",
     "src/client/preview/PreviewPanel.tsx",
     "src/client/preview/PreviewTabs.tsx",
     "src/client/preview/PreviewToolbar.tsx",
@@ -44,6 +45,9 @@
     },
     {
       "path": "../ui-conversation"
+    },
+    {
+      "path": "../ui-input-trigger"
     },
     {
       "path": "../ui-slots"

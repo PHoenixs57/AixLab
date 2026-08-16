@@ -295,6 +295,7 @@
     { "path": "./packages/lsp/lsp" },
     { "path": "./packages/lsp/lsp-stdio" },
     { "path": "./packages/lsp/tool-lsp" },
+    { "path": "./packages/client/ui-skin-center/tsconfig.host.json" },
     { "path": "./apps/cli" }
   ]
 }

@@ -107,7 +107,19 @@
     "@deepseek-ai/dsh-workspace": "workspace:^",
     "@deepseek-ai/schemastery": "workspace:^",
     "commander": "^15.0.0",
-    "@deepseek-ai/dsh-mcp-client": "workspace:^"
+    "@deepseek-ai/dsh-mcp-client": "workspace:^",
+    "@deepseek-ai/dsh-client-ui-skin-center": "workspace:^",
+    "@deepseek-ai/dsh-client-ui-skin-home": "workspace:^",
+    "@deepseek-ai/dsh-client-ui-skin-blue-fantasy": "workspace:^",
+    "@deepseek-ai/dsh-client-ui-skin-whale-song": "workspace:^",
+    "@deepseek-ai/dsh-client-ui-skin-harbor": "workspace:^",
+    "@deepseek-ai/dsh-client-ui-skin-qq98": "workspace:^",
+    "@deepseek-ai/dsh-client-ui-skin-ths": "workspace:^",
+    "@deepseek-ai/dsh-client-ui-skin-xp": "workspace:^",
+    "@deepseek-ai/dsh-client-ui-skin-dragon-heir": "workspace:^",
+    "@deepseek-ai/dsh-client-ui-skin-minecraft": "workspace:^",
+    "@deepseek-ai/dsh-client-ui-skin-trading": "workspace:^",
+    "@deepseek-ai/dsh-client-ui-skin-miku": "workspace:^"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis-plugin-loader": "workspace:^",

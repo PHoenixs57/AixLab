@@ -1,0 +1,189 @@
+/**
+ * AUTO-GENERATED skin registry for the GUI skin center. Gallery metadata
+ * only; try-on fetches each skin prebuilt lib/client.js on demand from
+ * /api/skin-center/bundle/<id>.
+ */
+
+/** One registry entry: gallery metadata for the skin center card. */
+export interface SkinCenterEntry {
+  /** Skin id (packages/client/ui-skin-<id>/). */
+  id: string
+  /** Display name (zh). */
+  name: string
+  /** Display name (en). */
+  nameEn: string
+  /** One-line tagline. */
+  tagline: string
+  /** Accent color for the swatch. */
+  accent: string
+  /** Author credit. */
+  author?: string
+  /** Longer description. */
+  description?: string
+  /** Tag list. */
+  tags?: string[]
+  /** Body attribute that scopes the skin styles. */
+  bodyAttr: string
+  /** Plugin package name (the boot-graph entry id when active). */
+  package: string
+  /** Gallery sort order. */
+  order?: number
+}
+
+/** Every installed in-box skin, ordered by skin.json `order`. */
+export const SKIN_CENTER_ENTRIES: readonly SkinCenterEntry[] = [
+  {
+    id: 'home',
+    name: 'AixLab 首页',
+    nameEn: 'AixLab Home',
+    author: 'AixLab',
+    tagline: '首页云朵插画背景 · 雾紫调色板 · 半透明面板',
+    description: '以 assets/home.png 首页视觉稿为背景的皮肤：雾紫与淡蓝灰的界面底色、半透明毛玻璃面板透出插画，亮色是晨雾书房，暗色是深夜实验室，同一张首页图两种氛围。',
+    tags: ['home', 'lavender', 'cloud', 'glass', 'translucent'],
+    accent: '#5b6cc4',
+    bodyAttr: 'data-dsh-home',
+    package: '@deepseek-ai/dsh-client-ui-skin-home',
+    order: 0,
+  },
+
+  {
+    id: 'blue-fantasy',
+    name: '蓝色幻想',
+    nameEn: 'Blue Fantasy',
+    author: 'powerdog996（DreamSkin 社区）· dsh-web-ui 适配',
+    tagline: '鲸鱼插画背景 · periwinkle 靛蓝调色板 · 半透明面板',
+    description: 'DreamSkin「DeepSeek-鲸鱼娘」Codex 桌面主题的 dsh 适配：鲸鱼插画背景垫在半透明面板之下，遮罩随亮/暗主题实时切换，periwinkle 靛蓝色调重映射到全部 dsh token。',
+    tags: ['dreamskin', 'whale', 'indigo', 'art', 'translucent'],
+    accent: '#4a5fa8',
+    bodyAttr: 'data-dsh-blue-fantasy',
+    package: '@deepseek-ai/dsh-client-ui-skin-blue-fantasy',
+    order: 1,
+  },
+
+  {
+    id: 'whale-song',
+    name: '鲸吟',
+    nameEn: 'Whale Song',
+    author: 'dsh-web-ui',
+    tagline: '深海鲸语女神背景 · 冰蓝海洋调色板 · 金色细线点缀',
+    description: '《鲸吟》— 深海鲸语女神主题：无文字纯氛围背景画（蓝发女神与鲸群居左、冰蓝星座网格与金线点缀、右侧大量留白）垫在半透明面板之下，遮罩随亮/暗主题实时切换，冰蓝/浅青/深海军蓝/钴蓝冷色体系重映射到全部 dsh token，暗色变体为深海夜航调。',
+    tags: ['whale', 'ocean', 'ice-blue', 'goddess', 'art', 'translucent'],
+    accent: '#4d8fd4',
+    bodyAttr: 'data-dsh-whale-song',
+    package: '@deepseek-ai/dsh-client-ui-skin-whale-song',
+    order: 2,
+  },
+
+  {
+    id: 'harbor',
+    name: '夕港',
+    nameEn: 'Harbor',
+    author: 'moeblack',
+    tagline: '暮光蓝港 · 日落橙辉 · 半透明夜色面板',
+    description: '《夕港》黄昏港口主题：动漫少女黄昏港口背景（暮光蓝天空渐入日落橙）垫在半透明面板之下，遮罩随亮/暗主题实时切换，深暮蓝 #141a2e 底与日落橙 #ff9d5c 主色重映射到 dsh token，亮色是薄暮纱、暗色是深海夜航纱，同一幅画两种读法。',
+    tags: ['harbor', 'dusk', 'twilight', 'sunset', 'amber', 'art', 'translucent'],
+    accent: '#ff9d5c',
+    bodyAttr: 'data-dsh-harbor',
+    package: '@deepseek-ai/dsh-client-ui-skin-harbor',
+    order: 3,
+  },
+
+  {
+    id: 'qq98',
+    name: 'QQ2008 怀旧版',
+    nameEn: 'QQ2008 Retro',
+    author: 'dsh-web-ui',
+    tagline: '水晶蓝桌面 · 玻璃深蓝标题栏 · 戴围巾企鹅',
+    description: 'dsh web ui 家族收录的第一个皮肤：QQ2008 水晶蓝年代。深蓝渐变桌面、玻璃质感标题栏、浅蓝状态栏和圆角高光控件，配一只戴围巾的企鹅。',
+    tags: ['retro', 'qq', '2008', 'crystal-blue', 'nostalgia'],
+    accent: '#2b7cd9',
+    bodyAttr: 'data-dsh-retro',
+    package: '@deepseek-ai/dsh-client-ui-skin-qq98',
+    order: 4,
+  },
+
+  {
+    id: 'ths',
+    name: '同花顺风格',
+    nameEn: 'Tonghuashun Trading',
+    author: 'dsh-web-ui',
+    tagline: '品牌红标题栏 · 实时行情状态栏 · 灰蓝数据终端',
+    description: '同花顺风格炒股主题：品牌红标题栏带上证指数行情签，状态栏红涨绿跌，自选股风格的侧边栏和交易终端面板，写代码也像盯盘。',
+    tags: ['stock', 'trading', 'terminal', 'red'],
+    accent: '#e60012',
+    bodyAttr: 'data-dsh-ths',
+    package: '@deepseek-ai/dsh-client-ui-skin-ths',
+    order: 5,
+  },
+
+  {
+    id: 'xp',
+    name: 'Windows XP (Luna)',
+    nameEn: 'Windows XP Luna',
+    author: 'dsh-web-ui',
+    tagline: 'Luna 蓝窗口条 · 绿色开始按钮 · Bliss 蓝天桌面',
+    description: 'Windows XP (Luna) 复古主题：蓝色渐变窗口条带窗口按钮、米色状态栏（大写/数字/滚动指示灯）、侧边栏任务栏上的绿色「开始」按钮、资源管理器风格树行和 Bliss 蓝天桌面，全局直角。',
+    tags: ['retro', 'xp', 'luna', 'windows', 'start-button'],
+    accent: '#316ac5',
+    bodyAttr: 'data-dsh-xp',
+    package: '@deepseek-ai/dsh-client-ui-skin-xp',
+    order: 6,
+  },
+
+  {
+    id: 'dragon-heir',
+    name: '龙的传人',
+    nameEn: 'Dragon Heir',
+    author: 'dsh-web-ui',
+    tagline: '不屈龙魂 · 万里长城双主题 · 朱砂龙印',
+    description: '龙的传人 — 一面是不屈龙魂（墨龙穿云、朱砂印章、不屈锋芒），一面是万里长城（青黛山色、金晖镀墙、苍茫暮色）。亮暗主题各自配一幅画与一枚龙印 favicon，面板半透明磨砂，让画透出来。',
+    tags: ['dragon', 'loong', 'chinese', 'ink-wash', 'great-wall', 'dual-theme'],
+    accent: '#c3272b',
+    bodyAttr: 'data-dsh-dragon-heir',
+    package: '@deepseek-ai/dsh-client-ui-skin-dragon-heir',
+    order: 7,
+  },
+
+  {
+    id: 'minecraft',
+    name: 'Minecraft 方块世界',
+    nameEn: 'Minecraft Voxel',
+    author: 'dsh-web-ui',
+    tagline: '动态全景天空盒 · 方块按钮 · 告示牌输入框',
+    description: '复刻《我的世界》主界面氛围的方块皮肤：程序化绘制的像素全景天空盒（方块山、像素云、方块树、草方块地面）在身后缓慢旋转，界面浮在石板上；按钮还原 MC 菜单按钮（灰石板、悬停变黄、按下下沉），输入框做成带钉子的木告示牌。',
+    tags: ['minecraft', 'voxel', 'pixel', 'game', 'panorama', 'skybox'],
+    accent: '#7cbd4b',
+    bodyAttr: 'data-dsh-minecraft',
+    package: '@deepseek-ai/dsh-client-ui-skin-minecraft',
+    order: 8,
+  },
+
+  {
+    id: 'trading',
+    name: '交易终端',
+    nameEn: 'Trading Terminal',
+    author: 'dsh-web-ui',
+    tagline: '实时行情跑马灯 · 长桥港美股行情 · 红涨绿跌交易终端',
+    description: '结合 dsh-fun-ticker 行情跑马灯与 dsh-longbridge 港美股行情的炒股皮肤：顶栏滚动 A股/港股/美股/指数/加密/外汇报价（装 fun-ticker 后跟随你的自选列表），状态栏展示长桥行情快照与 A股/港股/美股交易时段，写代码也像盯盘。',
+    tags: ['stock', 'trading', 'ticker', 'live', 'terminal', 'longbridge'],
+    accent: '#f23645',
+    bodyAttr: 'data-dsh-trading',
+    package: '@deepseek-ai/dsh-client-ui-skin-trading',
+    order: 9,
+  },
+
+  {
+    id: 'miku',
+    name: '初音未来 · 电子歌姬',
+    nameEn: 'Hatsune Miku',
+    author: '涂山苏苏',
+    tagline: '蓝紫双马尾 · 01 编号 · 音符波形 · 电子歌姬主题',
+    description: '以世界第一的虚拟歌姬初音未来为灵感的主题皮肤：蓝紫洋红渐变贯穿全局，音符与声波曲线点缀在半透明面板之间，标题栏与状态栏带有 01 编号徽标与音乐波形，半透明毛玻璃面板透出背景图——沉浸式电子歌姬氛围。',
+    tags: ['miku', 'vocaloid', 'blue', 'music', 'idol', 'waveform'],
+    accent: '#2e9bff',
+    bodyAttr: 'data-dsh-miku',
+    package: '@deepseek-ai/dsh-client-ui-skin-miku',
+    order: 10,
+  },
+
+]

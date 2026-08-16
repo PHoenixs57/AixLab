@@ -94,6 +94,18 @@
     { "path": "./packages/client/ui-settings-models" },
     { "path": "./packages/client/ui-settings-plugin-inventory" },
     { "path": "./packages/client/locale" },
+    { "path": "./packages/client/ui-skin-home" },
+    { "path": "./packages/client/ui-skin-blue-fantasy" },
+    { "path": "./packages/client/ui-skin-whale-song" },
+    { "path": "./packages/client/ui-skin-harbor" },
+    { "path": "./packages/client/ui-skin-qq98" },
+    { "path": "./packages/client/ui-skin-ths" },
+    { "path": "./packages/client/ui-skin-xp" },
+    { "path": "./packages/client/ui-skin-dragon-heir" },
+    { "path": "./packages/client/ui-skin-minecraft" },
+    { "path": "./packages/client/ui-skin-trading" },
+    { "path": "./packages/client/ui-skin-miku" },
+    { "path": "./packages/client/ui-skin-center/tsconfig.client.json" },
     { "path": "./packages/client/web" },
     { "path": "./apps/web" }
   ]
