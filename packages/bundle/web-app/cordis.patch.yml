@@ -244,6 +244,13 @@
     - id: ui-workspace
       name: '@deepseek-ai/dsh-client-ui-workspace'
 
+    # Right-side panel system: the Explorer file tree + filename search, the
+    # multi-tab Preview, and the drag-a-file-into-the-composer dock. The node
+    # half registers the workspace-gated /aionui-panel routes + fs service; the
+    # browser half (dsh.client) mounts the panel columns into the frame grid.
+    - id: ui-aionui-panel
+      name: '@deepseek-ai/dsh-client-ui-aionui-panel'
+
     # Input triggers: the '/' | '@' pipeline (ui-input-trigger), the command surface over
     # it (ui-commands), and the two reference sources (ui-skill / ui-subagent).
     - id: ui-input-trigger
