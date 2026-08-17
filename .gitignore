@@ -38,3 +38,5 @@ apps/web/dist/
 worktrees/
 .agents/worktrees/
 .typert-*/
+pnpm-workspace.yaml
+AGENTS.md

@@ -13,7 +13,7 @@ import type {
   ReferenceInsert, InputTriggerController, TokenSpan,
 } from '@deepseek-ai/dsh-client-ui-input-trigger/client'
 import type {
-  DraftAttachmentId, EditRange, EditSelection, InputActions, InputEffect, InputNotice, InputState,
+  DraftAttachmentId, DraftFileReference, EditRange, EditSelection, InputActions, InputEffect, InputNotice, InputState,
   PasteComponent, QueuedMessage, SessionInput, SubmitAttempt,
 } from './contract.ts'
 import type { InputSubmitMode } from '../contract/composer-submission.ts'
@@ -45,7 +45,12 @@ export interface SessionInputDeps {
    */
   steerQueue?: (() => void) | undefined
   /** The plain-message sink (send choreography / materialize fork — the hub owns it). */
-  defaultSink(text: string, imageIds: readonly DraftAttachmentId[], mode: InputSubmitMode): void
+  defaultSink(
+    text: string,
+    imageIds: readonly DraftAttachmentId[],
+    fileRefs: readonly DraftFileReference[],
+    mode: InputSubmitMode,
+  ): void
 }
 
 /** Guard tier from the machine phase. */
@@ -85,6 +90,7 @@ export class SessionInputShell implements SessionInput {
   private readonly core = new InputMachine({ now: () => Date.now() })
   private noticeSeq = 0
   private lastDraft = ''
+  private fileRefs: readonly DraftFileReference[] = []
   private imageIds: readonly DraftAttachmentId[] = []
   private disposed = false
   /** Draft persistence mirror (chat store write; receives the clipboard projection, never raw placeholders). */
@@ -105,6 +111,34 @@ export class SessionInputShell implements SessionInput {
    */
   setDraft(text: string, editRange?: EditRange): void {
     this.run(this.core.dispatch({ type: 'draft-changed', draft: text, ...(editRange !== undefined ? { editRange } : {}) }))
+  }
+
+  /** Append unique workspace file references unless an admission transaction is locked. */
+  addFiles(refs: readonly DraftFileReference[]): boolean {
+    if (this.snapshot.phase === 'adjudicating' || this.snapshot.phase === 'submitting') return false
+    if (refs.length === 0) return true
+    const byPath = new Map(this.fileRefs.map(ref => [ref.path, ref]))
+    for (const ref of refs) byPath.set(ref.path, ref)
+    const next = [...byPath.values()]
+    if (next.length === this.fileRefs.length && next.every((ref, index) => ref === this.fileRefs[index])) return true
+    this.fileRefs = next
+    this.publish()
+    return true
+  }
+
+  /** Remove one workspace file reference from this draft. */
+  removeFile(path: string): void {
+    const next = this.fileRefs.filter(ref => ref.path !== path)
+    if (next.length === this.fileRefs.length) return
+    this.fileRefs = next
+    this.publish()
+  }
+
+  /** Restore failed-send file references ahead of later additions. */
+  restoreFiles(refs: readonly DraftFileReference[]): void {
+    const current = new Set(this.fileRefs.map(ref => ref.path))
+    this.fileRefs = [...refs.filter(ref => !current.has(ref.path)), ...this.fileRefs]
+    this.publish()
   }
 
   /** Append ordered image ids unless an admission transaction is locked. */
@@ -151,10 +185,13 @@ export class SessionInputShell implements SessionInput {
    * the undo history is cut, so Ctrl/Cmd-Z cannot resurrect sent content
    * (the command path gets the same discipline from submit-settled success).
    * @param imageIds - admitted image ids to remove from this draft.
+   * @param fileRefs - admitted file references to remove from this draft.
    */
-  commitSend(imageIds: readonly DraftAttachmentId[]): void {
-    const submitted = new Set(imageIds)
-    this.imageIds = this.imageIds.filter(id => !submitted.has(id))
+  commitSend(imageIds: readonly DraftAttachmentId[], fileRefs: readonly DraftFileReference[]): void {
+    const submittedImages = new Set(imageIds)
+    const submittedFiles = new Set(fileRefs.map(ref => ref.path))
+    this.imageIds = this.imageIds.filter(id => !submittedImages.has(id))
+    this.fileRefs = this.fileRefs.filter(ref => !submittedFiles.has(ref.path))
     this.run(this.core.dispatch({ type: 'send-committed' }))
   }
 
@@ -196,8 +233,8 @@ export class SessionInputShell implements SessionInput {
    * dismisses and the menu tracks frozen.
    */
   submit(mode: InputSubmitMode = 'queue'): void {
-    if (this.snapshot.draft.trim() === '' && this.imageIds.length > 0) {
-      if (this.snapshot.phase === 'plain') this.deps.defaultSink('', [...this.imageIds], mode)
+    if (this.snapshot.draft.trim() === '' && (this.imageIds.length > 0 || this.fileRefs.length > 0)) {
+      if (this.snapshot.phase === 'plain') this.deps.defaultSink('', [...this.imageIds], [...this.fileRefs], mode)
       return
     }
     this.run(this.core.dispatch({ type: 'enter', mode }))
@@ -415,9 +452,10 @@ export class SessionInputShell implements SessionInput {
    */
   private sinkSerialized(draft: string, mode: InputSubmitMode): void {
     const imageIds = [...this.imageIds]
+    const fileRefs = [...this.fileRefs]
     const occurrences = this.core.state.occurrences
     if (occurrences.length === 0) {
-      this.deps.defaultSink(draft.trim(), imageIds, mode)
+      this.deps.defaultSink(draft.trim(), imageIds, fileRefs, mode)
       return
     }
     const inputTriggers = this.deps.inputTriggers?.()
@@ -437,7 +475,7 @@ export class SessionInputShell implements SessionInput {
           cursor = part.offset + 1
         }
         out += draft.slice(cursor)
-        this.deps.defaultSink(out.trim(), imageIds, mode)
+        this.deps.defaultSink(out.trim(), imageIds, fileRefs, mode)
       },
       (error: unknown) => {
         controller.abort()
@@ -495,7 +533,12 @@ export class SessionInputShell implements SessionInput {
 
   private compose(): InputState {
     const core = this.core.state
-    return { ...core, imageIds: this.imageIds, queue: this.deps.queue?.getSnapshot() ?? EMPTY_QUEUE }
+    return {
+      ...core,
+      fileRefs: this.fileRefs,
+      imageIds: this.imageIds,
+      queue: this.deps.queue?.getSnapshot() ?? EMPTY_QUEUE,
+    }
   }
 
   private publish(): void {

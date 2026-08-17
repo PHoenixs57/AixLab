@@ -26,7 +26,7 @@ import { createPanelStores, layoutSetRoot } from './store.ts'
 import { mountPanels } from './mount.tsx'
 import { NS, dictionaries, setLanguage, type AionUiPanelKey } from './locales.ts'
 import { DragFileInlay, type DragFileInjected } from './drag/DragFileInlay.tsx'
-import { createFileSource, fileReference } from './drag/file-source.ts'
+import { createFileSource, fileDraftReference } from './drag/file-source.ts'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
@@ -46,16 +46,20 @@ export function apply(ctx: ClientContext): void {
   // read through it.
   const api = new PanelApi()
 
-  // The '@' file source: typing '@' lists workspace files to mention; its
-  // codec (path identity) also owns submit-time serialization for the
-  // drag-a-file chip, so both mention and drop expand back to the relative
-  // path instead of raw text.
+  // The '@' file source: typing '@' lists workspace files and adds the picked
+  // path to the session's composer attachment row (the text trigger itself is
+  // consumed by the input pipeline).
   const rootOf = (sessionId: SessionId): string => {
     const cwd = ctx.sessions.list.getSnapshot().byId[sessionId]?.cwd
     return typeof cwd === 'string' && cwd !== '' ? cwd : ''
   }
+  const addFile = (sessionId: SessionId, ref: import('@deepseek-ai/dsh-client-ui-conversation/client').DraftFileReference): boolean => {
+    const actx = ctx.sessions.scope(sessionId)
+    const conversation = ctx.get('conversation')
+    return actx !== undefined && conversation !== undefined && conversation.input.for(actx).addFiles([ref])
+  }
   ctx.effect(
-    () => ctx.inputTriggers.registerSource(createFileSource({ api, rootOf })),
+    () => ctx.inputTriggers.registerSource(createFileSource({ api, rootOf, addFile })),
     'dsh-aionui-panel: file source',
   )
 
@@ -76,18 +80,13 @@ export function apply(ctx: ClientContext): void {
         inject: (sessionId: SessionId | undefined): DragFileInjected => ({
           insertFile: (path: string): boolean => {
             if (sessionId === undefined) return false
+            return addFile(sessionId, fileDraftReference(path))
+          },
+          removeFile: (path: string): void => {
+            if (sessionId === undefined) return
             const actx = sessions.scope(sessionId)
-            if (actx === undefined) return false
-            const input = conversation.input
-            if (input === undefined) return false
-            const shell = input.for(actx)
-            const snapshot = shell.state.getSnapshot()
-            const at = snapshot.draft.length
-            return shell.insertReference(fileReference(path), {
-              start: at,
-              end: at,
-              draftRev: snapshot.draftRev,
-            })
+            if (actx === undefined) return
+            conversation.input.for(actx).removeFile(path)
           },
         }),
       }, DragFileInlay))

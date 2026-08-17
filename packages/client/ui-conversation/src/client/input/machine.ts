@@ -133,6 +133,7 @@ export class InputMachine {
     const c = this.claim
     return {
       draft: this.draft,
+      fileRefs: [],
       imageIds: [],
       draftRev: this.draftRev,
       phase: this.phase,

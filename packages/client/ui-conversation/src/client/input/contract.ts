@@ -17,6 +17,14 @@ import type { InputSubmitMode } from '../contract/composer-submission.ts'
 /** Browser-runtime identity of one unsent image draft. */
 export type DraftAttachmentId = Branded<'DraftAttachmentId'>
 
+/** One unsent workspace file reference rendered by a composer dock entry. */
+export interface DraftFileReference {
+  /** Path relative to the session workspace root; also the stable draft identity. */
+  readonly path: string
+  /** File basename shown by the attachment chip. */
+  readonly name: string
+}
+
 /**
  * The scoped-event application verbs: the hub's bail listeners call these,
  * and the boolean answer IS the event's bail value (true ⟺ the machine
@@ -33,6 +41,10 @@ export interface InputTarget {
 export interface SessionInput extends InputTarget {
   /** Single write path for draft text (all mutation rides machine events). */
   setDraft(text: string): void
+  /** Append workspace file references; duplicate paths collapse to one chip. */
+  addFiles(refs: readonly DraftFileReference[]): boolean
+  /** Remove one workspace file reference by its relative path. */
+  removeFile(path: string): void
   /** Append ordered browser-owned image ids; busy admission phases refuse. */
   addImages(ids: readonly DraftAttachmentId[]): boolean
   /** Remove one browser-owned image id. */
@@ -208,6 +220,8 @@ export interface InputMachineOptions {
 /** Published input state (the currency; per-session). */
 export interface InputState {
   readonly draft: string
+  /** Ordered workspace file references rendered by composer dock entries. */
+  readonly fileRefs: readonly DraftFileReference[]
   /** Ordered runtime-only image ids; bytes and URLs stay in ConversationController. */
   readonly imageIds: readonly DraftAttachmentId[]
   /** Monotonic draft revision (span CAS compares against this). */

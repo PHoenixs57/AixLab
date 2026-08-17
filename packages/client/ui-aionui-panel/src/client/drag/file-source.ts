@@ -1,21 +1,21 @@
 /**
  * File reference chip source: the '@' source that lets the composer mention
- * workspace files (like '/' lists tools), plus the codec that owns submit-time
- * serialization. A mentioned or dropped file becomes an inline occurrence chip
- * labeled with its basename; the codec serializes it back to the
- * workspace-relative path at submit (and on copy/paste), so the path reaches
- * the agent without ever being a visible raw string in the draft.
+ * workspace files (like '/' lists tools). A mentioned or dropped file becomes
+ * a composer-dock attachment chip labeled with its basename; the input shell
+ * appends its workspace-relative path only when the draft is submitted, so the
+ * path reaches the agent without becoming visible draft text.
  * @module dsh-aionui-panel/client/drag/file-source
  */
 
 import type { SessionId } from '@deepseek-ai/dsh-client-runtime/client'
+import type { DraftFileReference } from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type { InputTriggerCandidate, InputTriggerSource, ReferenceInsert } from '@deepseek-ai/dsh-client-ui-input-trigger/client'
 import type { PanelApi } from '../api.ts'
 
 /** Reference source name (unique among '@' sources; the codec owner). */
 export const FILE_SOURCE_NAME = 'aionui-file'
 
-/** Build the reference insertion for one workspace-relative path. */
+/** Build the reference insertion retained for already-open legacy inline chips. */
 export function fileReference(path: string): ReferenceInsert {
   return {
     source: FILE_SOURCE_NAME,
@@ -25,11 +25,18 @@ export function fileReference(path: string): ReferenceInsert {
   }
 }
 
-/** Construction deps: the fs client plus a session→root resolver. */
+/** Build one composer-dock file reference. */
+export function fileDraftReference(path: string): DraftFileReference {
+  return { path, name: basename(path) }
+}
+
+/** Construction deps: fs access, session→root resolution, and draft mutation. */
 export interface FileSourceDeps {
   api: PanelApi
   /** Resolve a session's project root ('' when none is bound). */
   rootOf: (sessionId: SessionId) => string
+  /** Add one file to the addressed session's composer attachment row. */
+  addFile: (sessionId: SessionId, ref: DraftFileReference) => boolean
 }
 
 /** One menu row: basename up front, the relative path as the secondary line. */
@@ -39,9 +46,9 @@ function toCandidate(name: string, path: string): InputTriggerCandidate {
 
 /**
  * Create the '@' file source. An empty query lists the root's files; a query
- * runs the recursive filename search. Picking a row inserts a file chip whose
- * ref is the relative path.
- * @param deps - fs client and root resolver.
+ * runs the recursive filename search. Picking a row adds an attachment chip
+ * and consumes the trigger token from the text draft.
+ * @param deps - fs client, root resolver, and draft-file mutation.
  */
 export function createFileSource(deps: FileSourceDeps): InputTriggerSource {
   return {
@@ -64,9 +71,9 @@ export function createFileSource(deps: FileSourceDeps): InputTriggerSource {
         .filter(hit => !hit.isDir)
         .map(hit => toCandidate(hit.name, hit.path))
     },
-    onPick({ candidate }) {
+    onPick({ candidate, session }) {
       const path = candidate.description ?? candidate.name
-      return { insert: fileReference(path) }
+      return deps.addFile(session.sessionId, fileDraftReference(path)) ? { text: '' } : undefined
     },
     codec: {
       clipboardText: ref => ref,
