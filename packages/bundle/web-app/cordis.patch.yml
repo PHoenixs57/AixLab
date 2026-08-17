@@ -71,6 +71,11 @@
     - id: literature-favorites
       name: '@deepseek-ai/dsh-literature-favorites'
 
+    # Literature attachments: per-session papers the user adds from the
+    # literature UI (session events + the injected runtime context).
+    - id: literature-attachments
+      name: '@deepseek-ai/dsh-literature-attachments'
+
     # Literature search: the bundled multi-source MCP server, mounted at the
     # host plane so every session sees the mcp__literature__* tools (the
     # aixlab preset supplies the literature persona and skills).
@@ -239,6 +244,13 @@
     - id: ui-workspace
       name: '@deepseek-ai/dsh-client-ui-workspace'
 
+    # Right-side panel system: the Explorer file tree + filename search, the
+    # multi-tab Preview, and the drag-a-file-into-the-composer dock. The node
+    # half registers the workspace-gated /aionui-panel routes + fs service; the
+    # browser half (dsh.client) mounts the panel columns into the frame grid.
+    - id: ui-aionui-panel
+      name: '@deepseek-ai/dsh-client-ui-aionui-panel'
+
     # Input triggers: the '/' | '@' pipeline (ui-input-trigger), the command surface over
     # it (ui-commands), and the two reference sources (ui-skill / ui-subagent).
     - id: ui-input-trigger
@@ -287,6 +299,15 @@
     # cards. A namespace this deployment does not expose renders nothing.
     - id: ui-settings-plugins
       name: '@deepseek-ai/dsh-client-ui-settings-plugins'
+
+    # Skin center: the Plugins-settings card listing the official default plus
+    # every in-box ui-skin-* package. The node half registers /api/skin-center
+    # (state/apply/on-demand try-on bundles); the browser half registers the
+    # `settings.plugin.item` card. Individual skins are NOT wired here — the
+    # skin center inserts exactly one selected skin row into the running
+    # profile patch, and the config watcher hot-reloads it.
+    - id: ui-skin-center
+      name: '@deepseek-ai/dsh-client-ui-skin-center'
 
     # Plan control: the composer plan seat over the plan projection + /plan channel.
     - id: ui-plan

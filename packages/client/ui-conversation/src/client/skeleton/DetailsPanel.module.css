@@ -92,3 +92,13 @@
 .code[data-error] {
   color: var(--dsw-alias-state-error-primary);
 }
+
+.aixGirl {
+  flex: none;
+  align-self: flex-end;
+  width: 128px;
+  max-width: 40%;
+  margin: 0 12px 12px;
+  pointer-events: none;
+  user-select: none;
+}

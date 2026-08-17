@@ -784,6 +784,86 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'literatureAttachments',
+    summary: 'Log-backed per-session attachment service: validates attach requests, appends the paired session events, and renders the injected context.',
+    description: 'Log-backed per-session attachment service: validates attach requests, appends the paired session events, and renders the injected context.',
+    methods: [
+      {
+        signature: '@Remote(\'attach\') attach(agent: Agent, input: AttachedPaperInput): Promise<AttachResult>',
+        description: 'Attach one paper to the calling agent\'s conversation. Attaching the same stable id again is idempotent and logs nothing.',
+        parameters: [{ name: 'agent', description: 'the receiving agent whose session logs the attach.' }, { name: 'input', description: 'the paper to attach (id = DOI / PMID / arXiv id).' }],
+        returns: 'the committed paper and whether it was already attached.',
+      },
+      {
+        signature: '@Remote(\'detach\') detach(agent: Agent, id: string): Promise<DetachResult>',
+        description: 'Remove one attached paper by stable id. Removing an id that is not attached is idempotent and logs nothing.',
+        parameters: [{ name: 'agent', description: 'the receiving agent whose session logs the detach.' }, { name: 'id', description: 'the stable identifier used when the paper was attached.' }],
+        returns: 'the removed id and whether it was attached.',
+      },
+      {
+        signature: '@Remote(\'list\') list(agent: Agent): Promise<readonly AttachedPaper[]>',
+        description: 'List the calling agent\'s currently attached papers in attach order.',
+        parameters: [{ name: 'agent', description: 'the receiving agent whose session log is folded.' }],
+        returns: 'the frozen current attached set.',
+      },
+      {
+        signature: '@Remote(\'byTurn\') byTurn(agent: Agent): Promise<readonly AttachedTurn[]>',
+        description: 'List the papers each user message carried, keyed by that message\'s seq. Consumed papers stay visible here so the UI can render them under the message that sent them.',
+        parameters: [{ name: 'agent', description: 'the receiving agent whose session log is folded.' }],
+        returns: 'one frozen entry per user message that carried papers.',
+      },
+    ],
+  },
+  {
+    key: 'literatureFavorites',
+    summary: 'Storage-domain sidecar service.',
+    description: 'Storage-domain sidecar service. One global row holds the whole per-user collection; every mutation runs behind one serial queue.',
+    methods: [
+      {
+        signature: '@Remote(\'list\') list(): Promise<FavoritesListResult>',
+        description: 'List the whole collection: folders in creation order, papers newest first.',
+        parameters: [],
+        returns: 'the current frozen collection.',
+      },
+      {
+        signature: '@Remote(\'add\') add(request: FavoritesAddRequest): Promise<FavoritesAddResult>',
+        description: 'Bookmark one paper into the collection (optionally under a folder). A duplicate id is a business failure, not a silent no-op, so the panel can tell the user "already saved".',
+        parameters: [{ name: 'request', description: 'the paper to save (id = DOI / PMID / arXiv id).' }],
+        returns: 'the committed entry or an explicit duplicate / folder failure.',
+      },
+      {
+        signature: '@Remote(\'delete\') delete(request: FavoritesRemoveRequest): Promise<FavoritesRemoveResult>',
+        description: 'Remove one bookmark by stable id. The wire name is `delete`: `remove` is reserved by the Typert gateway and conflicts with its namespace service.',
+        parameters: [{ name: 'request', description: 'the id to unbookmark.' }],
+        returns: 'the removed id or an explicit not-found failure.',
+      },
+      {
+        signature: '@Remote(\'folderCreate\') folderCreate(request: FavoritesFolderCreateRequest): Promise<FavoritesFolderCreateResult>',
+        description: 'Create one category folder. Names are unique case-insensitively, so the panel can resolve a folder by its display name.',
+        parameters: [{ name: 'request', description: 'the display name.' }],
+        returns: 'the committed folder or an explicit name failure.',
+      },
+      {
+        signature: '@Remote(\'folderRename\') folderRename(request: FavoritesFolderRenameRequest): Promise<FavoritesFolderRenameResult>',
+        description: 'Rename one folder, keeping its papers filed under the same id.',
+        parameters: [{ name: 'request', description: 'the folder id and its new display name.' }],
+        returns: 'the renamed folder or an explicit failure.',
+      },
+      {
+        signature: '@Remote(\'folderDelete\') folderDelete(request: FavoritesFolderDeleteRequest): Promise<FavoritesFolderDeleteResult>',
+        description: 'Delete one folder; its papers move back to uncategorized (the folder delete is a classification change, never a paper loss).',
+        parameters: [{ name: 'request', description: 'the folder id to delete.' }],
+        returns: 'the removed folder id or an explicit not-found failure.',
+      },
+      {
+        signature: '@Remote(\'move\') move(request: FavoritesMoveRequest): Promise<FavoritesMoveResult>',
+        description: 'File one paper under a folder (or back into uncategorized).',
+        parameters: [{ name: 'request', description: 'the paper id and the target folder id (null = uncategorized).' }],
+        returns: 'the moved paper id or an explicit failure.',
+      },
+    ],
+  },
+  {
     key: 'llm',
     summary: 'The abstract `llm` service: an adapter registry plus a streaming model-call API, interceptable via the `llm/stream` waterfall.',
     description: 'The abstract `llm` service: an adapter registry plus a streaming model-call API, interceptable via the `llm/stream` waterfall.',
@@ -2710,8 +2790,28 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface AssistantProvenance {\n    provider: string;\n    model: string;\n    replayState?: unknown;\n}',
   },
   {
+    name: 'AttachedPaper',
+    declaration: 'export interface AttachedPaper {\n    id: string;\n    title: string;\n    authors: string[];\n    year: number | null;\n    venue: string | null;\n    abstract: string | null;\n    url: string | null;\n    identifiers: AttachedPaperIdentifiers;\n}',
+  },
+  {
+    name: 'AttachedPaperIdentifiers',
+    declaration: 'export interface AttachedPaperIdentifiers {\n    doi?: string;\n    pmid?: string;\n    pmcid?: string;\n    arxiv?: string;\n}',
+  },
+  {
+    name: 'AttachedPaperInput',
+    declaration: 'export type AttachedPaperInput = Omit<AttachedPaper, \'identifiers\' | \'year\' | \'venue\' | \'abstract\' | \'url\'> & {\n    year?: number | null;\n    venue?: string | null;\n    abstract?: string | null;\n    url?: string | null;\n    identifiers?: AttachedPaperIdentifiers;\n};',
+  },
+  {
+    name: 'AttachedTurn',
+    declaration: 'export interface AttachedTurn {\n    seq: number;\n    papers: readonly AttachedPaper[];\n}',
+  },
+  {
     name: 'AttachmentId',
     declaration: 'export type AttachmentId = Branded<\'AttachmentId\'>;',
+  },
+  {
+    name: 'AttachResult',
+    declaration: 'export interface AttachResult {\n    paper: AttachedPaper;\n    alreadyAttached: boolean;\n}',
   },
   {
     name: 'BackendRegistry',
@@ -2922,6 +3022,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type CredentialRef = Branded<\'CredentialRef\'>;',
   },
   {
+    name: 'DetachResult',
+    declaration: 'export interface DetachResult {\n    id: string;\n    found: boolean;\n}',
+  },
+  {
     name: 'DiffCallView',
     declaration: 'export interface DiffCallView {\n    card: \'diff\';\n    title: string;\n    diffs: FileDiff[];\n    locations?: FileLocation[];\n}',
   },
@@ -3028,6 +3132,102 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'EpochHeader',
     declaration: 'export interface EpochHeader {\n    config: LlmCallConfig;\n    adapterDefaults?: LlmCallConfigAdapterDefaults;\n    system?: string;\n    tools?: ToolSchema[];\n}',
+  },
+  {
+    name: 'FavoriteFolder',
+    declaration: 'export interface FavoriteFolder {\n    id: string;\n    name: string;\n    createdAt: number;\n}',
+  },
+  {
+    name: 'FavoritePaper',
+    declaration: 'export interface FavoritePaper {\n    id: string;\n    title: string;\n    authors: string[];\n    year: number | null;\n    venue: string | null;\n    abstract: string | null;\n    url: string | null;\n    identifiers?: FavoritePaperIdentifiers;\n    folderId: string | null;\n    addedAt: number;\n}',
+  },
+  {
+    name: 'FavoritePaperIdentifiers',
+    declaration: 'export interface FavoritePaperIdentifiers {\n    doi?: string;\n    pmid?: string;\n    pmcid?: string;\n    arxiv?: string;\n}',
+  },
+  {
+    name: 'FavoritesAddRequest',
+    declaration: 'export type FavoritesAddRequest = Omit<FavoritePaper, \'addedAt\'>;',
+  },
+  {
+    name: 'FavoritesAddResult',
+    declaration: 'export type FavoritesAddResult = FavoritesSuccess<FavoritePaper> | FavoritesRejected<FavoritesDuplicateError> | FavoritesRejected<FavoritesFolderNotFoundError>;',
+  },
+  {
+    name: 'FavoritesDuplicateError',
+    declaration: 'export interface FavoritesDuplicateError {\n    code: \'duplicate\';\n    id: string;\n}',
+  },
+  {
+    name: 'FavoritesDuplicateFolderError',
+    declaration: 'export interface FavoritesDuplicateFolderError {\n    code: \'duplicate-folder\';\n    name: string;\n}',
+  },
+  {
+    name: 'FavoritesFolderCreateRequest',
+    declaration: 'export interface FavoritesFolderCreateRequest {\n    name: string;\n}',
+  },
+  {
+    name: 'FavoritesFolderCreateResult',
+    declaration: 'export type FavoritesFolderCreateResult = FavoritesSuccess<FavoriteFolder> | FavoritesRejected<FavoritesFolderNameError> | FavoritesRejected<FavoritesDuplicateFolderError>;',
+  },
+  {
+    name: 'FavoritesFolderDeleteRequest',
+    declaration: 'export interface FavoritesFolderDeleteRequest {\n    id: string;\n}',
+  },
+  {
+    name: 'FavoritesFolderDeleteResult',
+    declaration: 'export type FavoritesFolderDeleteResult = FavoritesSuccess<{\n    removed: string;\n}> | FavoritesRejected<FavoritesFolderNotFoundError>;',
+  },
+  {
+    name: 'FavoritesFolderNameError',
+    declaration: 'export interface FavoritesFolderNameError {\n    code: \'invalid-name\';\n}',
+  },
+  {
+    name: 'FavoritesFolderNotFoundError',
+    declaration: 'export interface FavoritesFolderNotFoundError {\n    code: \'folder-not-found\';\n    id: string;\n}',
+  },
+  {
+    name: 'FavoritesFolderRenameRequest',
+    declaration: 'export interface FavoritesFolderRenameRequest {\n    id: string;\n    name: string;\n}',
+  },
+  {
+    name: 'FavoritesFolderRenameResult',
+    declaration: 'export type FavoritesFolderRenameResult = FavoritesSuccess<FavoriteFolder> | FavoritesRejected<FavoritesFolderNotFoundError> | FavoritesRejected<FavoritesFolderNameError> | FavoritesRejected<FavoritesDuplicateFolderError>;',
+  },
+  {
+    name: 'FavoritesListResult',
+    declaration: 'export type FavoritesListResult = FavoritesSuccess<FavoritesListValue>;',
+  },
+  {
+    name: 'FavoritesListValue',
+    declaration: 'export interface FavoritesListValue {\n    folders: FavoriteFolder[];\n    papers: FavoritePaper[];\n}',
+  },
+  {
+    name: 'FavoritesMoveRequest',
+    declaration: 'export interface FavoritesMoveRequest {\n    id: string;\n    folderId: string | null;\n}',
+  },
+  {
+    name: 'FavoritesMoveResult',
+    declaration: 'export type FavoritesMoveResult = FavoritesSuccess<{\n    moved: string;\n    folderId: string | null;\n}> | FavoritesRejected<FavoritesNotFoundError> | FavoritesRejected<FavoritesFolderNotFoundError>;',
+  },
+  {
+    name: 'FavoritesNotFoundError',
+    declaration: 'export interface FavoritesNotFoundError {\n    code: \'not-found\';\n    id: string;\n}',
+  },
+  {
+    name: 'FavoritesRejected',
+    declaration: 'export interface FavoritesRejected<E> {\n    ok: false;\n    error: E;\n}',
+  },
+  {
+    name: 'FavoritesRemoveRequest',
+    declaration: 'export interface FavoritesRemoveRequest {\n    id: string;\n}',
+  },
+  {
+    name: 'FavoritesRemoveResult',
+    declaration: 'export type FavoritesRemoveResult = FavoritesSuccess<{\n    removed: string;\n}> | FavoritesRejected<FavoritesNotFoundError>;',
+  },
+  {
+    name: 'FavoritesSuccess',
+    declaration: 'export interface FavoritesSuccess<T> {\n    ok: true;\n    value: T;\n}',
   },
   {
     name: 'FileDiff',

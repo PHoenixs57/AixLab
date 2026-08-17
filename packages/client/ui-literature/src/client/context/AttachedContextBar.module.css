@@ -1,0 +1,86 @@
+/* Attached-papers tiles. `.dock` is the standalone composer card (GoalBar
+   posture); `.tail` is the lighter block below a user message. Both share the
+   horizontal, rightward-wrapping tile row. */
+
+.dock {
+  box-sizing: border-box;
+  width: calc(
+    100% -
+    var(--dsh-composer-side-clearance) -
+    var(--dsh-composer-side-clearance)
+  );
+  max-width: var(--dsh-composer-card-max-width);
+  margin: 0 auto;
+  padding: 6px 12px 8px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 12px;
+  background: var(--dsw-specific-tip);
+}
+
+.tail {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0 0;
+}
+
+.head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-primary);
+}
+
+.check {
+  flex: none;
+  color: var(--dsw-alias-accent, #f5a623);
+}
+
+.sep {
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  max-width: 240px;
+  padding: 6px 8px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 8px;
+  background: var(--dsw-alias-fill-secondary);
+}
+
+.tileTitle {
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tileMeta {
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--dsw-alias-label-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

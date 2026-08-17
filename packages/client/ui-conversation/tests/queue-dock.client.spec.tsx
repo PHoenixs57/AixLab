@@ -64,7 +64,7 @@ function liveSession(initial: ConversationSnapshot) {
 }
 
 /** InputZone owner stub (the dock reads useSession only; the zone fields satisfy the owner share). */
-const INPUT_STATE: InputState = { draft: '', imageIds: [], draftRev: 0, phase: 'plain', occurrences: [], queue: [] }
+const INPUT_STATE: InputState = { draft: '', fileRefs: [], imageIds: [], draftRev: 0, phase: 'plain', occurrences: [], queue: [] }
 
 // Standard locale seat stub mirroring the real ns → common → key chain.
 const t: QueueDockProps['t'] = makeTranslate(zh, commonZh)

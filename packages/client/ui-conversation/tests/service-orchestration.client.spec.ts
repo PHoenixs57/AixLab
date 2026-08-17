@@ -51,6 +51,21 @@ describe('ConversationController', () => {
     await b.runtime.dispose()
   })
 
+  it('serializes composer file attachments as paths and clears them after admission', async () => {
+    const b = await bench()
+    const ref = { path: 'docs/example.md', name: 'example.md' }
+    expect(b.shell.addFiles([ref])).toBe(true)
+    b.shell.setDraft('review this file')
+    b.shell.submit()
+    await vi.waitFor(() => {
+      expect(b.prompt).toHaveBeenCalledWith([
+        { type: 'text', text: 'review this file\ndocs/example.md' },
+      ], 'queue')
+    })
+    expect(b.shell.snapshot.fileRefs).toEqual([])
+    await b.runtime.dispose()
+  })
+
   it('folds Session business failures into callback rejections', async () => {
     const b = await bench()
     b.prompt.mockResolvedValueOnce({ ok: false, error: { code: 'agent-busy', message: 'busy', details: {} } } as never)

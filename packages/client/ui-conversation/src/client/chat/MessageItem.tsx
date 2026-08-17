@@ -9,6 +9,7 @@ import type {
   ModelRetryNode, TurnErrorNode, UserMessageNode,
 } from '@deepseek-ai/dsh-client-runtime/client'
 import { JsonBlock, MessageText, StateDot } from '@deepseek-ai/dsh-client-ui-primitives'
+import type { PropsRenderSlots } from '@deepseek-ai/dsh-client-ui-slots'
 import type { ChatNodeViewProps, ChatViewSlotProps } from '../contract/slots.ts'
 import { ImageGallery, type ImageLoader } from '@deepseek-ai/dsh-client-ui-attachment'
 import { messageImageLabels } from '../image-labels.ts'
@@ -234,10 +235,36 @@ export function PendingSteeringBubble({ content, loadImage, t }: {
   )
 }
 
-/** User and admitted-steering keyed Chat renderer. */
+/** User keyed Chat renderer: the bubble plus the additive per-message tail hole. */
 export const UserMessageNodeView = memo(function UserMessageNodeView({
+  node, loadImage, renderSlot, t,
+}: ChatNodeViewProps<'user'> & PropsRenderSlots<'conversation.chat.user-tail'>) {
+  const data = node.data
+  return (
+    <>
+      <UserStyleBubble
+        content={data.content}
+        imageLoader={loadImage}
+        t={t}
+        actions={text => (
+          <MessageIconActions
+            text={text}
+            time={data.time}
+            clock="start"
+            className={css.actions}
+            t={t}
+          />
+        )}
+      />
+      {renderSlot('conversation.chat.user-tail', { seq: data.seq, key: node.key })}
+    </>
+  )
+})
+
+/** Steering keyed Chat renderer: the bubble without the per-message tail hole. */
+export const SteeringMessageNodeView = memo(function SteeringMessageNodeView({
   node, loadImage, t,
-}: ChatNodeViewProps<'user' | 'steering'>) {
+}: ChatNodeViewProps<'steering'>) {
   const data = node.data
   return (
     <UserStyleBubble

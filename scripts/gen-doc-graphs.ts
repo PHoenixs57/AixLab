@@ -222,6 +222,22 @@ const SERVICE_ROLES: ServiceRole[] = [
     note: 'Owns local per-assistant-message feedback, lifecycle and target validation, per-item compare-and-set, and the Host unary Remote contract without entering Session history or telemetry.',
   },
   {
+    key: 'literatureAttachments',
+    pkg: 'literature-attachments',
+    title: 'Per-session attached papers',
+    mode: 'core',
+    consumers: ['apiproxy', 'client-ui-literature'],
+    note: 'Logs literature/attach and literature/detach session events through the Remote service and folds them into the bounded literature:attached runtime context for every request.',
+  },
+  {
+    key: 'literatureFavorites',
+    pkg: 'literature-favorites',
+    title: 'Durable literature bookmarks',
+    mode: 'core',
+    consumers: ['apiproxy', 'client-ui-literature'],
+    note: 'Owns one global storage-domain collection row: stable-id papers with flat category folders, served through the Host Remote contract and agent tools.',
+  },
+  {
     key: 'workspaceRegistry',
     pkg: 'workspace',
     title: 'Workspace entity registry',

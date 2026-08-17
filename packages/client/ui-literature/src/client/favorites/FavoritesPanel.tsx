@@ -6,7 +6,7 @@
  * total count that expands the sidebar on click.
  */
 
-import { useCallback, useEffect, useSyncExternalStore, useState } from 'react'
+import { useCallback, useEffect, useMemo, useSyncExternalStore, useState } from 'react'
 import type { Context } from '@deepseek-ai/cordis'
 import {
   IconCheckOutline14,
@@ -23,15 +23,17 @@ import {
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 // Type-only: pulls the sidebar.favorites SlotMap merge from the sidebar shell.
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
-import type { FavoriteFolder } from '@deepseek-ai/dsh-literature-favorites/types'
+import type { FavoriteFolder, FavoritePaper } from '@deepseek-ai/dsh-literature-favorites/types'
+import { attachedPapersStore } from '../attached/store.ts'
 import { FolderPicker } from '../components/FolderPicker.tsx'
-import { StarIcon } from '../components/icons.tsx'
+import { MinusIcon, PlusIcon, StarIcon } from '../components/icons.tsx'
+import { favoriteToAttachedPayload } from '../paper-model.ts'
 import { favoritesStore } from './store.ts'
 import { NS } from '../locale.ts'
 import css from './FavoritesPanel.module.css'
 
 /** Full panel props: the sidebar hole owner share plus the locale seat. */
-type FavoritesPanelProps = PropsRuntime<'sidebar.favorites'> & PropsLocale<'literature'>
+export type FavoritesPanelProps = PropsRuntime<'sidebar.favorites'> & PropsLocale<'literature'>
 
 /** Browse scope: all papers, uncategorized, or one folder id. */
 type Scope = 'all' | 'uncategorized' | string
@@ -52,40 +54,60 @@ function markPending(id: string, on: boolean): void {
   for (const listener of pendingListeners) listener()
 }
 
-/** One saved-paper row with move / open / remove actions. */
-function FavoriteRow({ id, title, url, meta, onMove, t }: {
-  id: string
-  title: string
-  url: string | null
+/** One saved-paper row with add-to-conversation / move / open / remove actions. */
+function FavoriteRow({ paper, meta, attached, attachDisabled, onMove, onAttach, t }: {
+  paper: FavoritePaper
   meta: string
+  attached: boolean
+  attachDisabled: boolean
   onMove: () => void
+  onAttach: (paper: FavoritePaper) => Promise<void>
   t: FavoritesPanelProps['t']
 }) {
   const pending = useSyncExternalStore(subscribePending, getPendingSnapshot)
-  const busy = pending.has(id)
+  const busy = pending.has(paper.id)
+  const [attachBusy, setAttachBusy] = useState(false)
   const remove = useCallback(() => {
     if (busy) return
-    markPending(id, true)
-    favoritesStore.remove(id)
+    markPending(paper.id, true)
+    favoritesStore.remove(paper.id)
       .catch(() => { /* panel stays authoritative; next refresh reconciles */ })
-      .finally(() => { markPending(id, false) })
-  }, [busy, id])
+      .finally(() => { markPending(paper.id, false) })
+  }, [busy, paper.id])
+
+  const toggleAttach = useCallback(() => {
+    if (attachBusy || attachDisabled) return
+    setAttachBusy(true)
+    onAttach(paper)
+      .catch(() => { /* panel stays authoritative; next refresh reconciles */ })
+      .finally(() => { setAttachBusy(false) })
+  }, [attachBusy, attachDisabled, onAttach, paper])
 
   return (
     <li className={css.item}>
       <div className={css.itemBody}>
         <p className={css.itemTitle}>
-          {url === null
-            ? title
-            : <a href={url} target="_blank" rel="noreferrer" className={css.itemLink}>{title}</a>}
+          {paper.url === null
+            ? paper.title
+            : <a href={paper.url} target="_blank" rel="noreferrer" className={css.itemLink}>{paper.title}</a>}
         </p>
         {meta !== '' && <p className={css.itemMeta}>{meta}</p>}
       </div>
+      <button
+        type="button"
+        className={css.itemAction}
+        disabled={busy || attachBusy || attachDisabled}
+        onClick={toggleAttach}
+        aria-label={attached ? t('detachFromConversation') : t('attachToConversation')}
+        title={attachDisabled ? t('attachDisabled') : attached ? t('detachFromConversation') : t('attachToConversation')}
+      >
+        {attached ? <MinusIcon size={14} /> : <PlusIcon filled={false} size={14} />}
+      </button>
       <button type="button" className={css.itemAction} disabled={busy} onClick={onMove} aria-label={t('moveToFolder')} title={t('moveToFolder')}>
         <IconFolderOpen16 size={14} />
       </button>
-      {url !== null && (
-        <a className={css.itemAction} href={url} target="_blank" rel="noreferrer" aria-label="open">
+      {paper.url !== null && (
+        <a className={css.itemAction} href={paper.url} target="_blank" rel="noreferrer" aria-label="open">
           <IconLinkOutline14 />
         </a>
       )}
@@ -195,8 +217,10 @@ function FolderRow({ folder, count, selected, onSelect, t }: {
 }
 
 /** The sidebar favorites section: a flat folder library with per-scope papers. */
-export function FavoritesPanel({ wide, expandSidebar, t }: FavoritesPanelProps) {
+export function FavoritesPanel({ wide, expandSidebar, useSessions, t }: FavoritesPanelProps) {
   const view = useSyncExternalStore(favoritesStore.subscribe, favoritesStore.getSnapshot)
+  const attachedView = useSyncExternalStore(attachedPapersStore.subscribe, attachedPapersStore.getSnapshot)
+  const currentId = useSessions(s => s.current)
   // Folded by default: the count stays visible, the library unfolds on demand.
   const [open, setOpen] = useState(false)
   const [scope, setScope] = useState<Scope>('all')
@@ -208,6 +232,22 @@ export function FavoritesPanel({ wide, expandSidebar, t }: FavoritesPanelProps) 
   useEffect(() => {
     void favoritesStore.ensure()
   }, [])
+
+  // Load the current session's attached set once; the store mirrors the host log.
+  useEffect(() => {
+    if (currentId !== undefined) void attachedPapersStore.ensure(currentId)
+  }, [currentId])
+
+  const attachedIds = useMemo(() => {
+    const state = currentId === undefined ? undefined : attachedView.sessions[currentId]
+    return new Set(state?.papers.map(paper => paper.id) ?? [])
+  }, [attachedView, currentId])
+
+  const toggleAttach = useCallback((paper: FavoritePaper): Promise<void> => {
+    if (currentId === undefined) return Promise.resolve()
+    if (attachedIds.has(paper.id)) return attachedPapersStore.detachPaper(currentId, paper.id)
+    return attachedPapersStore.attachPaper(currentId, favoriteToAttachedPayload(paper))
+  }, [attachedIds, currentId])
 
   // A deleted folder cannot stay selected: fall back to 全部.
   useEffect(() => {
@@ -361,11 +401,12 @@ export function FavoritesPanel({ wide, expandSidebar, t }: FavoritesPanelProps) 
                 return (
                   <FavoriteRow
                     key={paper.id}
-                    id={paper.id}
-                    title={paper.title}
-                    url={paper.url}
+                    paper={paper}
                     meta={meta}
+                    attached={attachedIds.has(paper.id)}
+                    attachDisabled={currentId === undefined}
                     onMove={() => { setMovingPaper(paper.id) }}
+                    onAttach={toggleAttach}
                     t={t}
                   />
                 )

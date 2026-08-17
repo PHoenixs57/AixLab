@@ -72,7 +72,8 @@ export function InputBar({
     () => input === undefined || draftImages === undefined ? [] : draftImages(input.imageIds),
     [draftImages, input?.imageIds],
   )
-  const empty = draft.trim() === '' && attachments.length === 0
+  const fileRefs = input?.fileRefs ?? []
+  const empty = draft.trim() === '' && attachments.length === 0 && fileRefs.length === 0
   const [preview, setPreview] = useState<ComposerAttachment | null>(null)
   const [dragActive, setDragActive] = useState(false)
   // Transient error banner (image-intake rejections and prompt failures): the

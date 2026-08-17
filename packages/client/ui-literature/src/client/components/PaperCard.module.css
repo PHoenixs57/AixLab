@@ -11,7 +11,8 @@
   align-items: flex-start;
 }
 
-.star {
+.star,
+.attach {
   flex: none;
   display: inline-flex;
   align-items: center;
@@ -24,16 +25,19 @@
   color: var(--dsw-alias-label-secondary);
 }
 
-.star:hover {
+.star:hover,
+.attach:hover {
   background: var(--dsw-alias-fill-hover);
 }
 
-.star:disabled {
+.star:disabled,
+.attach:disabled {
   opacity: 0.4;
   cursor: default;
 }
 
-.starSaved {
+.starSaved,
+.attachActive {
   color: var(--dsw-alias-accent, #f5a623);
 }
 

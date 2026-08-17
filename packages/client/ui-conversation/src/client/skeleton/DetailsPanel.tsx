@@ -28,6 +28,12 @@ export function DetailsPanel({ renderSlot, closeDetails, t }: DetailsPanelProps)
             by the literature UI plugin. */}
         {renderSlot('conversation.details.literature', {})}
       </div>
+      <img
+        className={css.aixGirl}
+        src="/assets/aix-girl.png"
+        alt=""
+        draggable={false}
+      />
     </div>
   )
 }

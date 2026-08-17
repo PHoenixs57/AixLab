@@ -18,6 +18,7 @@ import type { FavoritesRow } from './spec.ts'
 import type {
   FavoriteFolder,
   FavoritePaper,
+  FavoritePaperIdentifiers,
   FavoritesAddRequest,
   FavoritesAddResult,
   FavoritesDuplicateError,
@@ -70,6 +71,14 @@ function rejected<E>(error: E): FavoritesRejected<E> {
 
 /** Copy and freeze one entry before it crosses the service boundary. */
 function snapshotPaper(paper: FavoritePaper): FavoritePaper {
+  const identifiers = paper.identifiers === undefined
+    ? undefined
+    : Object.freeze({
+      ...paper.identifiers.doi !== undefined ? { doi: paper.identifiers.doi } : {},
+      ...paper.identifiers.pmid !== undefined ? { pmid: paper.identifiers.pmid } : {},
+      ...paper.identifiers.pmcid !== undefined ? { pmcid: paper.identifiers.pmcid } : {},
+      ...paper.identifiers.arxiv !== undefined ? { arxiv: paper.identifiers.arxiv } : {},
+    }) as FavoritePaperIdentifiers
   return Object.freeze({
     id: paper.id,
     title: paper.title,
@@ -78,6 +87,7 @@ function snapshotPaper(paper: FavoritePaper): FavoritePaper {
     venue: paper.venue,
     abstract: paper.abstract,
     url: paper.url,
+    ...identifiers === undefined ? {} : { identifiers },
     folderId: paper.folderId ?? null,
     addedAt: paper.addedAt,
   }) as FavoritePaper
@@ -100,12 +110,28 @@ function snapshotCollection(collection: Collection): Collection {
   }
 }
 
+/** Trim one identifiers set, dropping blank fields; undefined when nothing remains. */
+function normalizeIdentifiers(input: FavoritePaperIdentifiers | undefined): FavoritePaperIdentifiers | undefined {
+  if (input === undefined) return undefined
+  const result: FavoritePaperIdentifiers = {}
+  const doi = input.doi?.trim()
+  const pmid = input.pmid?.trim()
+  const pmcid = input.pmcid?.trim()
+  const arxiv = input.arxiv?.trim()
+  if (doi !== undefined && doi !== '') result.doi = doi
+  if (pmid !== undefined && pmid !== '') result.pmid = pmid
+  if (pmcid !== undefined && pmcid !== '') result.pmcid = pmcid
+  if (arxiv !== undefined && arxiv !== '') result.arxiv = arxiv
+  return Object.keys(result).length === 0 ? undefined : result
+}
+
 /** Trim and validate one add request into a storable entry. */
 function toEntry(request: FavoritesAddRequest): FavoritePaper {
   const id = request.id.trim()
   const title = request.title.trim()
   if (id.length === 0) throw new Error('literature_favorites_add: `id` must be a non-empty string')
   if (title.length === 0) throw new Error('literature_favorites_add: `title` must be a non-empty string')
+  const identifiers = normalizeIdentifiers(request.identifiers)
   return {
     id,
     title,
@@ -114,6 +140,7 @@ function toEntry(request: FavoritesAddRequest): FavoritePaper {
     venue: request.venue?.trim() || null,
     abstract: request.abstract?.trim() || null,
     url: request.url?.trim() || null,
+    ...identifiers === undefined ? {} : { identifiers },
     folderId: request.folderId?.trim() || null,
     addedAt: Date.now(),
   }
@@ -430,6 +457,17 @@ export class LiteratureFavoritesService extends TypertRemoteService {
         venue: { type: 'string', description: 'Journal / conference / preprint server name.' },
         abstract: { type: 'string', description: 'Abstract or summary text.' },
         url: { type: 'string', description: 'Canonical landing page URL.' },
+        identifiers: {
+          type: 'object',
+          additionalProperties: false,
+          description: 'Stable identifiers beyond `id` (any subset), used when the paper is later attached to a conversation for deep reading.',
+          properties: {
+            doi: { type: 'string', description: 'Digital Object Identifier, e.g. 10.1000/example.1.' },
+            pmid: { type: 'string', description: 'PubMed identifier.' },
+            pmcid: { type: 'string', description: 'PubMed Central identifier, e.g. PMC1234567.' },
+            arxiv: { type: 'string', description: 'arXiv identifier, e.g. 2001.01234.' },
+          },
+        },
         folder: { type: 'string', description: 'Category folder name; created when missing (empty = uncategorized).' },
       },
       output: {
@@ -458,6 +496,7 @@ export class LiteratureFavoritesService extends TypertRemoteService {
           venue: args.venue ?? null,
           abstract: args.abstract ?? null,
           url: args.url ?? null,
+          ...args.identifiers === undefined ? {} : { identifiers: args.identifiers },
           folderId,
         })
         if (!result.ok) {

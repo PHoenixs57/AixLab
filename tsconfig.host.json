@@ -152,6 +152,7 @@
     { "path": "./packages/storage/storage-json" },
     { "path": "./packages/storage/storage-sqlite" },
     { "path": "./packages/storage/storage-domain" },
+    { "path": "./packages/literature/literature-attachments" },
     { "path": "./packages/literature/literature-favorites" },
     { "path": "./packages/feedback/message-feedback" },
     { "path": "./packages/workspace/workspace" },
@@ -294,6 +295,7 @@
     { "path": "./packages/lsp/lsp" },
     { "path": "./packages/lsp/lsp-stdio" },
     { "path": "./packages/lsp/tool-lsp" },
+    { "path": "./packages/client/ui-skin-center/tsconfig.host.json" },
     { "path": "./apps/cli" }
   ]
 }

@@ -1,0 +1,23 @@
+{
+  "id": "home",
+  "name": "AixLab 首页",
+  "nameEn": "AixLab Home",
+  "author": "AixLab",
+  "tagline": "首页云朵插画背景 · 雾紫调色板 · 半透明面板",
+  "description": "以 assets/home.png 首页视觉稿为背景的皮肤：雾紫与淡蓝灰的界面底色、半透明毛玻璃面板透出插画，亮色是晨雾书房，暗色是深夜实验室，同一张首页图两种氛围。",
+  "tags": [
+    "home",
+    "lavender",
+    "cloud",
+    "glass",
+    "translucent"
+  ],
+  "accent": "#5b6cc4",
+  "bodyAttr": "data-dsh-home",
+  "package": "@deepseek-ai/dsh-client-ui-skin-home",
+  "wiring": {
+    "id": "ui-skin-home",
+    "bundleWired": false
+  },
+  "order": 0
+}

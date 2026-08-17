@@ -12,7 +12,9 @@ import type { ClientContext, ISessions, SessionBinding, SessionFace, SessionId }
 import type { InputTriggerController } from '@deepseek-ai/dsh-client-ui-input-trigger/client'
 import type { TranslateNS } from '@deepseek-ai/dsh-client-locale/client'
 import { queueReadFaceOf } from '../queue/store.ts'
-import type { ComposerKeyboard, DraftAttachmentId, SessionInputResolver, SessionInput } from './contract.ts'
+import type {
+  ComposerKeyboard, DraftAttachmentId, DraftFileReference, SessionInputResolver, SessionInput,
+} from './contract.ts'
 import type { InputSubmitMode } from '../contract/composer-submission.ts'
 import type { PopupDismissFace } from './facade.ts'
 import { SessionInputShell } from './facade.ts'
@@ -75,7 +77,7 @@ export class InputHub implements SessionInputResolver {
       inputTriggers: () => this.controller(actx),
       popup: () => this.popup(actx),
       queue: queueReadFaceOf(session),
-      defaultSink: (text, imageIds, mode) => { this.sink(session, text, imageIds, mode) },
+      defaultSink: (text, imageIds, fileRefs, mode) => { this.sink(session, text, imageIds, fileRefs, mode) },
       steerQueue: () => { void this.steerQueue(session, shell) },
     })
     this.shells.set(id, shell)
@@ -150,15 +152,18 @@ export class InputHub implements SessionInputResolver {
     session: SessionFace,
     text: string,
     imageIds: readonly DraftAttachmentId[],
+    fileRefs: readonly DraftFileReference[],
     mode: InputSubmitMode,
   ): void {
-    if (text === '' && imageIds.length === 0) return
+    if (text === '' && imageIds.length === 0 && fileRefs.length === 0) return
+    const promptText = [text, ...fileRefs.map(ref => ref.path)].filter(part => part !== '').join('\n')
     const shell = this.shells.get(session.sessionId)
     // Commit, not an editable clear: undo must not resurrect sent content.
-    shell?.commitSend(imageIds)
-    void this.conversation().sendSession(session, text, imageIds, mode).catch(() => {
+    shell?.commitSend(imageIds, fileRefs)
+    void this.conversation().sendSession(session, promptText, imageIds, mode).catch(() => {
       if (this.shells.get(session.sessionId) === shell) {
         shell?.restoreImages(imageIds)
+        shell?.restoreFiles(fileRefs)
         if (shell?.snapshot.draft === '') shell.setDraft(text)
         return
       }

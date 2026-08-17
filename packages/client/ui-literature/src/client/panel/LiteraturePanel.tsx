@@ -4,7 +4,7 @@
  * It auto-opens the details column once a turn settles with new papers.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import type { Context } from '@deepseek-ai/cordis'
 import { IconChevronDownOutline14, IconChevronUpOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
 import { shallowEqual } from '@deepseek-ai/dsh-client-runtime/client'
@@ -13,8 +13,11 @@ import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 // Type-only: pulls the layout Context merge (ctx.layout).
 import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
+import { attachedPapersStore } from '../attached/store.ts'
 import { PaperCard } from '../components/PaperCard.tsx'
 import { collectPapers } from '../collection.ts'
+import { paperStableId, toAttachedPayload } from '../paper-model.ts'
+import type { PaperItem } from '../paper-model.ts'
 import { NS } from '../locale.ts'
 import css from './LiteraturePanel.module.css'
 
@@ -36,17 +39,38 @@ function useAutoOpen(papersCount: number, running: boolean, openDetails: () => v
 }
 
 /** The right-column literature section. */
-export function LiteraturePanel({ useSession, openDetails, t }: LiteraturePanelProps) {
+export function LiteraturePanel({ useSession, sessionId, openDetails, t }: LiteraturePanelProps) {
   // The whole snapshot: nodes ride structural sharing, so shallowEqual keeps
   // re-renders to frames whose node list actually changed.
   const snapshot = useSession(s => s, shallowEqual)
   const papers = useMemo(() => collectPapers(snapshot), [snapshot])
+  const attachedView = useSyncExternalStore(attachedPapersStore.subscribe, attachedPapersStore.getSnapshot)
   const [open, setOpen] = useState(true)
   // The paper list starts at the default 60vh cap; the bottom drag handle
   // lets the user pull the window taller (component-local view state).
   const [listHeight, setListHeight] = useState<number | null>(null)
   const listRef = useRef<HTMLDivElement | null>(null)
   const dragHandlers = useRef<{ move: (e: PointerEvent) => void; up: () => void } | null>(null)
+
+  // Load this session's attached set once; the store mirrors the host log.
+  useEffect(() => {
+    if (sessionId !== undefined) void attachedPapersStore.ensure(sessionId)
+  }, [sessionId])
+
+  const attachedIds = useMemo(() => {
+    const state = sessionId === undefined ? undefined : attachedView.sessions[sessionId]
+    return new Set(state?.papers.map(paper => paper.id) ?? [])
+  }, [attachedView, sessionId])
+
+  const onAttach = useCallback((paper: PaperItem): Promise<void> => {
+    if (sessionId === undefined) return Promise.resolve()
+    return attachedPapersStore.attachPaper(sessionId, toAttachedPayload(paper))
+  }, [sessionId])
+
+  const onDetach = useCallback((paper: PaperItem): Promise<void> => {
+    if (sessionId === undefined) return Promise.resolve()
+    return attachedPapersStore.detachPaper(sessionId, paperStableId(paper))
+  }, [sessionId])
 
   // Unmount mid-drag: the window listeners must not outlive the panel.
   useEffect(() => () => {
@@ -101,7 +125,14 @@ export function LiteraturePanel({ useSession, openDetails, t }: LiteraturePanelP
             style={listHeight === null ? undefined : { maxHeight: listHeight }}
           >
             {papers.map(paper => (
-              <PaperCard key={paper.id ?? `${paper.title}-${paper.rank}`} paper={paper} t={t} />
+              <PaperCard
+                key={paper.id ?? `${paper.title}-${paper.rank}`}
+                paper={paper}
+                t={t}
+                attached={attachedIds.has(paperStableId(paper))}
+                onAttach={() => onAttach(paper)}
+                onDetach={() => onDetach(paper)}
+              />
             ))}
           </div>
           <div className={css.resizeHandle} onPointerDown={startResize} aria-hidden="true" />

@@ -1,0 +1,59 @@
+{
+  "extends": "../../../tsconfig.base.client.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "tsBuildInfoFile": "lib/tsconfig.client.tsbuildinfo"
+  },
+  "files": [
+    "src/core/types.ts",
+    "src/client/api.ts",
+    "src/client/index.ts",
+    "src/client/store.ts",
+    "src/client/persist.ts",
+    "src/client/fileType.ts",
+    "src/client/locales.ts",
+    "src/client/drag.ts",
+    "src/client/layout.ts",
+    "src/client/mount.tsx",
+    "src/client/css-modules.d.ts",
+    "src/client/hooks/useStore.ts",
+    "src/client/hooks/useResizableSplit.ts",
+    "src/client/components/ExplorerPanel.tsx",
+    "src/client/components/FileIcon.tsx",
+    "src/client/components/icons.tsx",
+    "src/client/components/overlay.tsx",
+    "src/client/components/a11y.ts",
+    "src/client/drag/DragFileInlay.tsx",
+    "src/client/drag/file-drag.ts",
+    "src/client/drag/file-source.ts",
+    "src/client/preview/PreviewPanel.tsx",
+    "src/client/preview/PreviewTabs.tsx",
+    "src/client/preview/PreviewToolbar.tsx",
+    "src/client/preview/content.tsx",
+    "src/client/preview/markdown.ts"
+  ],
+  "references": [
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../runtime"
+    },
+    {
+      "path": "../locale"
+    },
+    {
+      "path": "../ui-conversation"
+    },
+    {
+      "path": "../ui-input-trigger"
+    },
+    {
+      "path": "../ui-slots"
+    },
+    {
+      "path": "../../runtime-diagnostics/invariants"
+    }
+  ]
+}
