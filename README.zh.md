@@ -6,20 +6,108 @@
 
 **deepseek-aix** 是一个面向科学研究的 AI 文献助手：用对话描述研究主题，agent 通过内置的多源文献检索服务（PubMed、arXiv、Semantic Scholar、Crossref 等）帮你搜集相关文献，并把结果整理成可折叠、可收藏的文献卡片。
 
-deepseek-aix 以 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 为底座 fork 而来：保留其完整的 agent 基础设施（会话、工具、子代理、工作流、Web GUI），并在此基础上新增文献能力 —— 多源文献检索服务、带分类文件夹的持久化收藏，以及把检索结果和收藏渲染为卡片的一等公民 Web UI。
+deepseek-aix 以 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 为底座 fork 而来：保留其完整的 agent 基础设施（会话、工具、子代理、工作流、沙箱代码执行、Web GUI），并在此基础上新增文献能力 —— 多源文献检索服务、带分类文件夹的持久化收藏、皮肤中心、右侧面板，以及把检索结果和收藏渲染为卡片的一等公民 Web UI。
 
-## 产品亮点
+## 功能
+
+### 文献检索
 
 - **对话式文献检索**：新建会话即默认进入 deepseek-aix 科研助手模式，用自然语言（中英文均可）描述研究主题，agent 会自动检索、去重、排序。
-- **对话内论文卡片**：每次检索结果都渲染为卡片，包含作者、年份、期刊、摘要和 DOI/PMID/arXiv 标识。
-- **带文件夹的收藏**：跨会话把论文收藏进持久的个人收藏夹，并在侧边栏中按分类文件夹管理。
-- **一切皆插件**：底层框架采用插件化架构，由 [Cordis](https://github.com/cordiverse/cordis) 驱动，其设计参见论文 [_A Programming Paradigm for Spatiotemporal Composability_](https://github.com/cordiverse/paper)。
+- **多源检索**：通过内置 MCP 服务并行检索 PubMed、Europe PMC、bioRxiv/medRxiv、Crossref、OpenAlex、Semantic Scholar、arXiv 七个数据源。
+- **自动去重与多轮合并**：同一会话内多轮检索结果自动去重融合。
+- **对话内论文卡片**：每次检索结果渲染为卡片，包含作者、年份、期刊、摘要和 DOI/PMID/arXiv 标识。
+- **全文获取**：支持开放获取子集的全文检索与精读。
+- **右侧文献面板**：每轮对话结束后自动展开，汇总当前会话所有搜集到的文献。
 
-## 页面展示
+### 文献收藏
 
-<img src="assets/page_01.png" width="760" alt="deepseek-aix 界面截图 1" />
+- **带文件夹的收藏**：跨会话把论文收藏进持久的个人收藏夹，在侧边栏中按分类文件夹管理。
+- **跨会话持久化**：收藏存储在服务端（`$DSH_HOME/storages/literature_favorites.json`），跨会话、跨浏览器保留。
+- **文件夹管理**：新建、重命名、删除分类文件夹，在文件夹之间移动文献。
+- **Agent 工具**：agent 也可通过 `literature_favorites_add/remove/list/folder_create/folder_rename/folder_delete/move` 工具读写收藏。
 
-<img src="assets/page_02.png" width="760" alt="deepseek-aix 界面截图 2" />
+### 皮肤中心
+
+- **多主题皮肤**：内置 blue-fantasy、dragon-heir、harbor、miku、minecraft、qq98、ths、trading、whale-song、xp、home 等多种 UI 皮肤。
+- **实时预览**：应用前可预览皮肤效果，一键切换。
+- **可扩展**：新皮肤可通过插件方式安装。
+
+### 右侧面板（Aionui 面板）
+
+- **文件浏览器**：浏览工作区目录树，支持文件名搜索。
+- **多标签预览**：在多个标签页中预览文件（Markdown、图片、代码等）。
+- **拖拽输入**：从文件浏览器直接拖拽文件到对话输入框。
+- **工作区门控**：尊重当前工作区根目录。
+
+### 文件 @ 引用
+
+- **文件引用**：在输入框中输入 `@` 可引用工作区中的文件。
+- **内联文件芯片**：选中的文件以芯片形式显示在输入区域。
+
+### 底层框架能力
+
+- **工作区与文件管理**：完整的文件系统访问，带沙箱权限控制。
+- **沙箱代码执行**：bash 和 PowerShell，带权限审批。
+- **子代理与并行研究**：派生子代理进行多任务并行研究。
+- **Goal 目标自动续跑**：自主推进目标进度。
+- **计划模式与任务拆解**：结构化规划与执行。
+- **持久会话、回放与多模型配置**：历史对话持久化，灵活的模型选择。
+- **插件化架构**：一切皆插件，由 [Cordis](https://github.com/cordiverse/cordis) 驱动。
+
+## 快速开始
+
+### 环境要求
+
+- Node.js ≥ 22
+- pnpm
+- DeepSeek API Key（配置在 `~/.dsh/.credentials.yaml`）
+
+### 从源码运行
+
+```sh
+git clone https://github.com/PHoenixs57/AixLab.git aixlab
+cd aixlab
+pnpm install
+pnpm run build:lib
+pnpm run build:web
+pnpm dsh web --patch dev.cordis.yml
+```
+
+打开 `http://127.0.0.1:3090`，新建会话，试试：
+
+> "帮我搜集 IL-6 信号通路在类风湿关节炎中的最新文献，3 篇即可。"
+
+### 开发迭代
+
+客户端插件热更新：
+
+```sh
+pnpm run dev:web
+pnpm dsh web --patch dev.cordis.yml
+```
+
+## 架构
+
+```
+aixlab/
+├── apps/cli/config/agent-presets/aixlab/   # Production "deepseek-aix" preset
+│   ├── preset.yml
+│   ├── agent.cordis.yml
+│   └── skills/literature-search/
+├── presets/aixlab/                         # Same content for customization
+├── mcp/literature-search-mcp/              # Multi-source literature search MCP (stdio)
+├── packages/
+│   ├── literature/literature-favorites/    # Host plugin: favorites tools + panel
+│   ├── literature/literature-attachments/  # Full-text retrieval service
+│   ├── client/ui-literature/               # Client plugin: paper cards + favorites panel
+│   ├── client/ui-aionui-panel/             # Right-side panel: explorer + preview + drag
+│   ├── client/ui-skin-center/              # Skin management center
+│   ├── client/ui-skin-*/                   # Individual theme skins
+│   └── client/ui-sidebar/                  # Modified: sidebar.favorites slot
+├── packages/api/remotes/                   # literatureFavorites Remote registration
+├── packages/bundle/web-app/                # Web app bundle with all integrations
+└── dev.cordis.yml                          # Development overlay (port 3090)
+```
 
 ## 模式与功能
 
@@ -31,8 +119,9 @@ deepseek-aix 以 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harn
 | 文献卡片（作者、年份、期刊、摘要、DOI/PMID/arXiv、开放获取标记） | ✓ | — |
 | 收藏与分类文件夹（跨会话持久化） | ✓ | — |
 | 全文获取（开放获取子集） | ✓ | — |
-| 文献加入对话（加号）与上下文注入精读 | ✓ | — |
-| 文献检索方法论技能 | ✓ | — |
+| 皮肤中心（多主题切换） | ✓ | ✓ |
+| 右侧面板（文件浏览器、预览、拖拽输入） | ✓ | ✓ |
+| 文件 @ 引用 | ✓ | ✓ |
 | 工作区与文件管理 | ✓ | ✓ |
 | 沙箱代码执行（bash / PowerShell） | ✓ | ✓ |
 | 子代理与并行研究 | ✓ | ✓ |
@@ -40,48 +129,25 @@ deepseek-aix 以 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harn
 | 计划模式与任务拆解 | ✓ | ✓ |
 | 持久会话、回放与多模型配置 | ✓ | ✓ |
 
-## 开发者预览
+## 配置
 
-deepseek-aix 目前处于 _开发者预览_ 阶段，正在快速迭代。**未来将出现破坏兼容性的变更。**
+- **MCP 服务位置**：默认使用 `mcp/literature-search-mcp/dist/server.js`；可通过环境变量 `AIXLAB_MCP_SERVER` 覆盖。
+- **MCP 工作目录**：通过 `AIXLAB_MCP_DIR` 环境变量覆盖。
+- **默认预设**：`agent-presets.default: aixlab` 配置在 `packages/bundle/web-app/cordis.patch.yml` 中；可在设置里改回 standard。
+- **端口**：`dev.cordis.yml` 使用 3090 端口，冲突时可修改。
 
-## 运行
-
-### 通过 `npm` 运行
-
-安装 `Node.js`，然后运行：
-
-```sh
-npx @deepseek-ai/dsh web --port 3090
-```
-
-该命令会启动 Web UI，地址为 `http://127.0.0.1:3090`（端口可配置，默认 `3080`）。详见 [Web UI 指南](docs/user/guide/index.md)。
-
-### 从源码运行
-
-如需从仓库源码运行：
+## 测试
 
 ```sh
-git clone https://github.com/deepseek-ai/deepseek-harness.git
-cd deepseek-harness
-pnpm install
-pnpm run build
-pnpm dsh web
+# Literature favorites service
+pnpm exec vitest run packages/literature/literature-favorites/tests/literature-favorites.spec.ts
+
+# Paper card model (client)
+pnpm exec vitest run packages/client/ui-literature/tests/paper-model.client.spec.ts
+
+# GUI end-to-end smoke test (requires running server on 3090; playwright chromium)
+node scripts/e2e-smoke.mjs
 ```
-
-## 社区与支持
-
-- 欢迎通过 [GitHub Discussions](https://github.com/deepseek-ai/deepseek-harness/discussions) 提交反馈或 bug 报告。
-- 欢迎加入 DeepSeek Harness 企微群：扫码添加企微小助手并填写入群问卷，完成后小助手会邀请你入群。
-
-## 参与贡献
-
-参见 [CONTRIBUTING.md](CONTRIBUTING.md)。
-
-## 开发
-
-请先阅读[开发指南](docs/development.md)与[架构文档](docs/architecture.md)。
-
-面向 agent：请遵循 [AGENTS.md](AGENTS.md)。
 
 ## 许可证
 
