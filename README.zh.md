@@ -149,6 +149,31 @@ pnpm exec vitest run packages/client/ui-literature/tests/paper-model.client.spec
 node scripts/e2e-smoke.mjs
 ```
 
+如需从仓库源码运行：
+
+```sh
+git clone https://github.com/PHoenixs57/deepseek-aix.git
+cd deepseek-aix
+pnpm install
+pnpm run build
+pnpm dsh web
+```
+
+## 社区与支持
+
+- 欢迎通过 [GitHub Discussions](https://github.com/PHoenixs57/deepseek-aix/discussions) 提交反馈或 bug 报告。
+- 欢迎加入 DeepSeek Harness 企微群：扫码添加企微小助手并填写入群问卷，完成后小助手会邀请你入群。
+
+## 参与贡献
+
+参见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
+## 开发
+
+请先阅读[开发指南](docs/development.md)与[架构文档](docs/architecture.md)。
+
+面向 agent：请遵循 [AGENTS.md](AGENTS.md)。
+
 ## 许可证
 
 [MIT](LICENSE)
