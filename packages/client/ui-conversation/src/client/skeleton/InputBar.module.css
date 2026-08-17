@@ -1,11 +1,11 @@
-/* One-glyph font: maps ONLY U+FFFC to a blank 8em-advance glyph (every other
+/* One-glyph font: maps ONLY U+FFFC to a blank 4em-advance glyph (every other
    codepoint falls through to the next family). Loaded first in the composer
    font stack, it gives the placeholder a real cell width INSIDE the textarea,
    so the backdrop chip (same char, same stack) matches it by construction —
    the two layers cannot drift and the chip gets a usable label cell. */
 @font-face {
   font-family: 'DshChipCell';
-  src: url('data:font/ttf;base64,AAEAAAAKAIAAAwAgT1MvMkT8UjIAAAEoAAAAYGNtYXAADQBPAAABkAAAADRnbHlmAAAAAAAAAcwAAAABaGVhZF8WQOAAAACsAAAANmhoZWEDIh57AAAA5AAAACRobXR4ITQAAAAAAYgAAAAIbG9jYQAAAAAAAAHEAAAABm1heHAAAwACAAABCAAAACBuYW1lvljk2gAAAdAAAABscG9zdEdMS7gAAAI8AAAALAABAAAAAQAACVzYIl8PPPUAAwPoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwACAAAAAAAAAAEAAAMg/zgAAB9AAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAACAAEAAAACAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAxCaAZAABQAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAPz8/PwAA//z//AMg/zgAAAMgAMgAAAAAAAAAAAAAAAAAAAAgAAAB9AAAH0AAAAAAAAIAAAADAAAAFAADAAEAAAAUAAQAIAAAAAQABAABAAD//P//AAD//P//AAUAAQAAAAAAAAAAAAAAAAAAAAAAAAAEADYAAQAAAAAAAQALAAAAAQAAAAAAAgAHAAsAAwABBAkAAQAWABIAAwABBAkAAgAOAChEc2hDaGlwQ2VsbFJlZ3VsYXIARABzAGgAQwBoAGkAcABDAGUAbABsAFIAZQBnAHUAbABhAHIAcgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAABAgV1RkZGQw==');
+  src: url('data:font/ttf;base64,AAEAAAAKAIAAAwAgT1MvMkT8SmIAAAEoAAAAYGNtYXAADQBPAAABkAAAADRnbHlmAAAAAAAAAcwAAAABaGVhZCwtPGoAAACsAAAANmhoZWEDIg7bAAAA5AAAACRobXR4EZQAAAAAAYgAAAAIbG9jYQAAAAAAAAHEAAAABm1heHAAAwACAAABCAAAACBuYW1lvljk2gAAAdAAAABscG9zdNNweNQAAAI8AAAALQABAAAAAQAAdia1tV8PPPUAAwPoAAAAAOaLfcUAAAAA5ot9xQAAAAAAAAAAAAAAAwACAAAAAAAAAAEAAAMg/zgAAA+gAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAACAAEAAAACAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAwjKAZAABQAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAPz8/PwAA//z//AMg/zgAAAMgAMgAAAAAAAAAAAAAAAAAAAAgAAAB9AAAD6AAAAAAAAIAAAADAAAAFAADAAEAAAAUAAQAIAAAAAQABAABAAD//P//AAD//P//AAUAAQAAAAAAAAAAAAAAAAAAAAAAAAAEADYAAQAAAAAAAQALAAAAAQAAAAAAAgAHAAsAAwABBAkAAQAWABIAAwABBAkAAgAOAChEc2hDaGlwQ2VsbFJlZ3VsYXIARABzAGgAQwBoAGkAcABDAGUAbABsAFIAZQBnAHUAbABhAHIAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAABAgZvYmpyZXAAAAA=');
 }
 
 /* Floating capsule input (figma Input_Bottom 75:8208): card floats above the
@@ -228,7 +228,7 @@
   /* figma .InputText 34:10434: pl 16 / pr 12 / pt 4. Backdrop MUST share these
      metrics or the highlight ranges drift off the glyphs. */
   padding: 4px 12px 0 16px;
-  /* DshChipCell first: ONLY U+FFFC resolves there (8em blank cell — the chip
+  /* DshChipCell first: ONLY U+FFFC resolves there (4em blank cell — the chip
      slot); everything else falls through to the app stack. All three layers
      share the stack, so placeholder advances agree by construction. */
   font-family: 'DshChipCell', var(--dsw-font-family);
@@ -438,7 +438,7 @@
    alignment constraint: the chip's advance must equal the textarea's U+FFFC
    advance EXACTLY or every glyph after it drifts (caret/selection follow the
    textarea character stream). The ::before renders the same U+FFFC through
-   the same font stack (DshChipCell 8em cell), so both layers agree by
+   the same font stack (DshChipCell 4em cell), so both layers agree by
    construction — no measured widths. The label overlays the cell, clipped
    with an ellipsis; the full name rides the title tooltip. */
 .chip {
