@@ -598,6 +598,17 @@ export function InputBar({
       pushPlain(b.at)
       if (b.kind === 'chip') {
         const chip = b.chip
+        // Estimate the chip width so it adapts to the filename length.
+        // The placeholder cell is 4em wide (DshChipCell U+FFFC). Each
+        // character is roughly 0.55em. We scale the chip to fit the label,
+        // then pull subsequent text back to the 4em placeholder position
+        // via a negative margin-right to maintain alignment.
+        const label = chip.label
+        const labelEm = Math.max(4, Math.min(25, label.length * 0.55 + 1.5))
+        const chipStyle = {
+          width: `${labelEm}em`,
+          marginRight: `${-(labelEm - 4)}em`,
+        }
         backdrop.push(
           // The cell's ::before renders U+FFFC itself so its advance equals the
           // textarea's placeholder exactly (same char, same font); the label is
@@ -605,12 +616,13 @@ export function InputBar({
           <span
             key={`chip-${chip.occurrenceId}`}
             className={clsx(css.chip, chip.invalid && css.chipInvalid)}
+            style={chipStyle}
             data-decoration="chip"
             data-occurrence={chip.occurrenceId}
             data-invalid={chip.invalid || undefined}
-            title={chip.label}
+            title={label}
           >
-            <span className={css.chipLabel}>{chip.label}</span>
+            <span className={css.chipLabel}>{label}</span>
           </span>,
         )
         cursor = chip.offset + 1 // the placeholder char the chip stands for
