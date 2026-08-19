@@ -86,8 +86,8 @@
         transport: stdio
         command: node
         args:
-          - !!js "process.env.AIXLAB_MCP_SERVER ?? '/home/penghao/work-space/claude-work/aixlab/mcp/literature-search-mcp/dist/server.js'"
-        cwd: !!js "process.env.AIXLAB_MCP_DIR ?? '/home/penghao/work-space/claude-work/aixlab/mcp/literature-search-mcp'"
+          - !!js "process.env.AIXLAB_MCP_SERVER ?? (process.cwd() + '/mcp/literature-search-mcp/dist/server.js')"
+        cwd: !!js "process.env.AIXLAB_MCP_DIR ?? (process.cwd() + '/mcp/literature-search-mcp')"
         toolCallTimeoutMs: 120000
         failOnStartupError: true
 
