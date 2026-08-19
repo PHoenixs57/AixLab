@@ -1,0 +1,3 @@
+[submodule "mcp/literature-search-mcp"]
+	path = mcp/literature-search-mcp
+	url = https://github.com/PHoenixs57/literature-search-mcp.git
