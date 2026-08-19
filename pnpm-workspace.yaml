@@ -8,6 +8,9 @@ packages:
   # Product assemblies over the package tier; apps/cli owns the `dsh` bin.
   - apps/*
   - website
+  # The bundled literature-search MCP server (git submodule, own build);
+  # `pnpm run build` builds it through the `build:mcp` root script.
+  - mcp/literature-search-mcp
   # The runnable demo leaves join as ONE workspace member: examples/package.json
   # declares the union of every leaf's cordis.yml plugins as workspace:*, so a
   # plain-node (`:lib`) boot of any leaf (examples/<leaf>/cordis.yml) resolves its

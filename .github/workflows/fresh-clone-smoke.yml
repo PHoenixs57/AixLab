@@ -1,0 +1,55 @@
+name: fresh-clone smoke
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PRIMARY_NODE_VERSION: '24'
+  # CI runs must never report to the production telemetry endpoint baked into
+  # apps/cli/cordis.yml (AppCLIEntry disables the row when set).
+  DSH_TELEMETRY_DISABLED: '1'
+  # session.create performs no model call; the dummy key only satisfies the
+  # credential reference so boot never blocks on missing credentials.
+  DEEPSEEK_API_KEY: 'ci-fresh-clone-smoke-dummy'
+
+jobs:
+  fresh-clone-boot:
+    name: fresh clone / install / build / boot / session.create
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # A truly fresh machine: no store cache, recursive submodules — exactly
+      # what a first-time Windows user following the README hits, minus the
+      # OS-specific shell/sandbox layers (the Windows CI lanes own those).
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v4
+        with:
+          dest: ${{ runner.temp }}/setup-pnpm
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.PRIMARY_NODE_VERSION }}
+
+      - name: Verify the MCP submodule is populated
+        run: |
+          test -f mcp/literature-search-mcp/package.json
+          test -f mcp/literature-search-mcp/src/server.ts
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build (lib + mcp + web)
+        run: pnpm run build
+
+      - name: Boot web and smoke session.create
+        run: bash scripts/fresh-clone-smoke.sh

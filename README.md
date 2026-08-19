@@ -60,22 +60,44 @@ Built as a fork of [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-ha
 
 - Node.js ≥ 22
 - pnpm
-- DeepSeek API Key (configured in `~/.dsh/.credentials.yaml`)
+- An API key for a supported LLM provider (see [API keys](#api-keys))
 
 ### Run from source
 
+The repository uses one git submodule for the bundled literature-search MCP server; clone with `--recurse-submodules` (or run `git submodule update --init` after a plain clone).
+
 ```sh
-git clone https://github.com/PHoenixs57/AixLab.git aixlab
-cd aixlab
+git clone --recurse-submodules https://github.com/PHoenixs57/deepseek-aix.git
+cd deepseek-aix
 pnpm install
-pnpm run build:lib
-pnpm run build:web
+pnpm run build
 pnpm dsh web --patch dev.cordis.yml
 ```
 
 Open `http://127.0.0.1:3090`, create a new session, and try:
 
 > "Find me the latest papers on IL-6 signaling in rheumatoid arthritis, 3 papers."
+
+### API keys
+
+Set the key for your provider's credential reference, either as an environment variable or in `~/.dsh/.credentials.yaml` (a plain YAML mapping, one `KEY: value` per line). Environment variables take precedence over the file.
+
+- `DEEPSEEK_API_KEY` — the default `deepseek-official` provider.
+- `JIYUAN_API_KEY` — the `jiyuan` provider used by the `llm-pi-ai` route; add an `llm-pi-ai` section to `~/.dsh/settings.yaml` to select it.
+
+### Windows
+
+```powershell
+git clone --recurse-submodules https://github.com/PHoenixs57/deepseek-aix.git
+cd deepseek-aix
+pnpm install
+pnpm run build
+$env:DEEPSEEK_API_KEY = "sk-..."    # or write it into ~/.dsh/.credentials.yaml
+pnpm dsh web --patch dev.cordis.yml
+```
+
+- The web app picks the Windows shell stack automatically: PowerShell over ConPTY instead of bash, plus the Windows ACL sandbox.
+- `node-pty` compiles from source on first `pnpm install`; on Windows that needs the Visual Studio Build Tools (MSVC). Everything else is cross-platform Node.js.
 
 ### Development
 
@@ -131,9 +153,9 @@ aixlab/
 
 ## Configuration
 
-- **MCP server location**: defaults to `mcp/literature-search-mcp/dist/server.js`; override with `AIXLAB_MCP_SERVER` environment variable.
+- **MCP server location**: defaults to `<repo>/mcp/literature-search-mcp/dist/server.js` (relative to the directory you run `pnpm dsh` from); built by `pnpm run build`. Override with `AIXLAB_MCP_SERVER`.
 - **MCP working directory**: override with `AIXLAB_MCP_DIR`.
-- **Default preset**: `agent-presets.default: aixlab` in `packages/bundle/web-app/cordis.patch.yml`; can be changed to `standard` in settings.
+- **Default preset**: `agent-presets.default: aixlab` in `~/.dsh/settings.yaml` (the shipped preset lives in `apps/cli/config/agent-presets/aixlab/`); change it to `standard` for the plain harness preset.
 - **Port**: `dev.cordis.yml` uses port 3090; change if needed.
 
 ## Testing
@@ -149,14 +171,14 @@ pnpm exec vitest run packages/client/ui-literature/tests/paper-model.client.spec
 node scripts/e2e-smoke.mjs
 ```
 
-To run from a repository checkout:
+To run from a repository checkout (same as [Quick Start](#quick-start), the build now includes the bundled MCP server):
 
 ```sh
-git clone https://github.com/PHoenixs57/deepseek-aix.git
+git clone --recurse-submodules https://github.com/PHoenixs57/deepseek-aix.git
 cd deepseek-aix
 pnpm install
 pnpm run build
-pnpm dsh web
+pnpm dsh web --patch dev.cordis.yml
 ```
 
 ## Community and support

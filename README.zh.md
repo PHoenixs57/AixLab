@@ -60,22 +60,44 @@ deepseek-aix 以 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harn
 
 - Node.js ≥ 22
 - pnpm
-- DeepSeek API Key（配置在 `~/.dsh/.credentials.yaml`）
+- 受支持 LLM 提供方的 API Key（见下文的 [API Key](#api-key)）
 
 ### 从源码运行
 
+仓库用了一个 git 子模块来内置 literature-search MCP 服务；请用 `--recurse-submodules` 克隆（或在普通克隆后执行 `git submodule update --init`）。
+
 ```sh
-git clone https://github.com/PHoenixs57/AixLab.git aixlab
-cd aixlab
+git clone --recurse-submodules https://github.com/PHoenixs57/deepseek-aix.git
+cd deepseek-aix
 pnpm install
-pnpm run build:lib
-pnpm run build:web
+pnpm run build
 pnpm dsh web --patch dev.cordis.yml
 ```
 
 打开 `http://127.0.0.1:3090`，新建会话，试试：
 
 > "帮我搜集 IL-6 信号通路在类风湿关节炎中的最新文献，3 篇即可。"
+
+### API Key
+
+为你的 provider 的凭证引用配置 Key，可以是环境变量，也可以写入 `~/.dsh/.credentials.yaml`（纯 YAML 映射，每行一个 `KEY: value`）。环境变量优先于文件。
+
+- `DEEPSEEK_API_KEY` —— 默认的 `deepseek-official` provider。
+- `JIYUAN_API_KEY` —— 内置 `llm-pi-ai` 路由使用的 `jiyuan` provider；如需选用，在 `~/.dsh/settings.yaml` 中添加 `llm-pi-ai` 配置段。
+
+### Windows
+
+```powershell
+git clone --recurse-submodules https://github.com/PHoenixs57/deepseek-aix.git
+cd deepseek-aix
+pnpm install
+pnpm run build
+$env:DEEPSEEK_API_KEY = "sk-..."    # 或写入 ~/.dsh/.credentials.yaml
+pnpm dsh web --patch dev.cordis.yml
+```
+
+- Web 应用会自动选择 Windows 的 shell 栈：使用基于 ConPTY 的 PowerShell 而非 bash，并启用 Windows ACL 沙箱。
+- `node-pty` 在首次 `pnpm install` 时会从源码编译；Windows 上需要 Visual Studio Build Tools（MSVC）。其余部分均为跨平台 Node.js。
 
 ### 开发迭代
 
@@ -131,9 +153,9 @@ aixlab/
 
 ## 配置
 
-- **MCP 服务位置**：默认使用 `mcp/literature-search-mcp/dist/server.js`；可通过环境变量 `AIXLAB_MCP_SERVER` 覆盖。
+- **MCP 服务位置**：默认使用 `<仓库根目录>/mcp/literature-search-mcp/dist/server.js`（相对于执行 `pnpm dsh` 的目录）；由 `pnpm run build` 构建。可通过环境变量 `AIXLAB_MCP_SERVER` 覆盖。
 - **MCP 工作目录**：通过 `AIXLAB_MCP_DIR` 环境变量覆盖。
-- **默认预设**：`agent-presets.default: aixlab` 配置在 `packages/bundle/web-app/cordis.patch.yml` 中；可在设置里改回 standard。
+- **默认预设**：`agent-presets.default: aixlab` 配置在 `~/.dsh/settings.yaml` 中（内置预设位于 `apps/cli/config/agent-presets/aixlab/`）；可改为 standard 使用普通预设。
 - **端口**：`dev.cordis.yml` 使用 3090 端口，冲突时可修改。
 
 ## 测试
@@ -149,14 +171,14 @@ pnpm exec vitest run packages/client/ui-literature/tests/paper-model.client.spec
 node scripts/e2e-smoke.mjs
 ```
 
-如需从仓库源码运行：
+如需从仓库源码运行（同[快速开始](#快速开始)，build 已包含内置 MCP 服务）：
 
 ```sh
-git clone https://github.com/PHoenixs57/deepseek-aix.git
+git clone --recurse-submodules https://github.com/PHoenixs57/deepseek-aix.git
 cd deepseek-aix
 pnpm install
 pnpm run build
-pnpm dsh web
+pnpm dsh web --patch dev.cordis.yml
 ```
 
 ## 社区与支持
