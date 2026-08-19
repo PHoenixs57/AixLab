@@ -2,7 +2,7 @@ name: fresh-clone smoke
 
 on:
   push:
-    branches: [master]
+    branches: [beta, master]
   pull_request:
   workflow_dispatch:
 
