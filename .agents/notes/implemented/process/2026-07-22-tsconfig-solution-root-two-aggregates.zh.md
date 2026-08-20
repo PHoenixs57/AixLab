@@ -41,5 +41,5 @@ solution 根文件刻意 `extends` base：`examples/` 与 `scripts/` 没有更�
 
 - `docs/development.md#typescript-project-layout` 是权威描述；根 `AGENTS.md` 以约定形式收录上述两条纪律。
 - [ts-build-config Agent Note](2026-06-17-ts-build-config.md) 继续拥有 tsc 先行的构建流水线（tsc 负责输出，tsdown 负责打包，`.ts` 说明符配合 `rewriteRelativeImportExtensions`）；其原先「单一根类型检查项目」的形态由本文取代。
-- 新增一个普通 package 只登记进恰好一个 aggregate 的 references（Host package 进 `tsconfig.host.json`，Client package 进 `tsconfig.client.json`）。`api/remotes` 因 Host 生成约定与 Client 消费约定的顺序关系成为唯一显式拆分例外；其两个具体 project 分别登记，包根 solution 不进入任一 aggregate。
+- 新增一个普通 package 只登记进恰好一个 aggregate 的 references（Host package 进 `tsconfig.host.json`，Client package 进 `tsconfig.client.json`）。拥有独立 Host 与 Client project 文件的包，则把 Host leaf 登记进 Host 图、Client leaf 登记进 Client 图，包根 solution 不进入任一 aggregate。`api/remotes` 是唯一一个 Client leaf 消费 Host 生成 `/remote` 约定的拆分包；其他拆分包遵循相同的匹配 compiler face 规则，但没有这项生成依赖。
 - Host 与 Client 构建阶段必须串行：Host tsdown 生成约定后 Client tsc 才能开始。各阶段复用各 project 的增量状态，不通过并发重复处理同一张图。
